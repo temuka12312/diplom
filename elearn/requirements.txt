@@ -5,3 +5,4 @@ django-debug-toolbar
 django-jazzmin
 channels 
 channels_redis 
+djangorestframework

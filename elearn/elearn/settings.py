@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,18 +25,26 @@ SECRET_KEY = 'django-insecure-+m-k+6nzf5*wdylk!=bc)z+1o8%u4yun+^kro9awsb(7ms!ini
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'debug_toolbar',
+    'channels',
+    'rest_framework',
+    'users',
+    'courses',
+    'progress',
+    'ai_engine',
 ]
 
 MIDDLEWARE = [
@@ -102,16 +110,30 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'mn'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Ulaanbaatar'
 
-USE_I18N = True
+USE_I18N = False
 
-USE_TZ = True
+USE_L10N = False
+
+USE_TZ = False
+
+AUTH_USER_MODEL = 'users.User'
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = os.environ.get("STATIC_URL", "/static/")
+STATIC_ROOT = os.getenv("STATIC_ROOT", os.path.join(BASE_DIR, 'design', 'static_root'))
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "design", "static"),
+)
+
+SHARED_MEDIA = os.path.normpath(os.path.join(BASE_DIR, "SHARED_MEDIA"))
+MEDIA_ROOT = os.getenv("MEDIA_ROOT", SHARED_MEDIA)
+MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

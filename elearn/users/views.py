@@ -12,15 +12,11 @@ from django.contrib.auth import login
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
 
+from rest_framework import generics
 from users.models import User
-# Create your views here.
+from users.serializers import RegisterSerializer
 
-def ping(request):
-    data = {}
-    data['build_mode'] = os.environ.get("BUILD_MODE")
-    data['build_date'] = os.environ.get("BUILD_DATE")
-    data['version'] = os.environ.get("IMAGE_VERSION")
-    data['app'] = "core"
-    return JsonResponse(data)
 
-logger = logging.getLogger(__name__)
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
