@@ -1,8 +1,10 @@
-Django
 Pillow
 requests
 django-debug-toolbar
 django-jazzmin
 channels 
 channels_redis 
+Django>=5.0
 djangorestframework
+djangorestframework-simplejwt
+psycopg2-binary

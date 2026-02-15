@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: elearn_db
+    environment:
+      POSTGRES_DB: elearn
+      POSTGRES_USER: elearn
+      POSTGRES_PASSWORD: elearn
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    container_name: elearn_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DB_NAME: elearn
+      DB_USER: elearn
+      DB_PASSWORD: elearn
+      DB_HOST: db
+      DB_PORT: 5432
+
+volumes:
+  postgres_data:

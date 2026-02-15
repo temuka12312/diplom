@@ -16,8 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse  # add this
+
+# simple home view
+def home(request):
+    return HttpResponse("Welcome to Elearn API!")
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/users/', include('users.urls')),
+    path('api/auth/', include('users.urls')),
+    path('', home),  # root URL
 ]
