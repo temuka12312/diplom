@@ -3,26 +3,28 @@ version: "3.9"
 services:
   db:
     image: postgres:16
-    container_name: elearn_db
     environment:
       POSTGRES_DB: elearn
       POSTGRES_USER: elearn
       POSTGRES_PASSWORD: elearn
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U elearn"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./backend
-    container_name: elearn_backend
-    command: python manage.py runserver 0.0.0.0:8000
+    command: sh wait-for-db.sh python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend:/app
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DB_NAME: elearn
       DB_USER: elearn
