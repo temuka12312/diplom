@@ -22,9 +22,7 @@ from rest_framework import status
 from .serializers import RegisterSerializer, UserSerializer
 from .models import User
 
-
 @api_view(["POST"])
-@permission_classes([AllowAny])
 def register(request):
     serializer = RegisterSerializer(data=request.data)
     if serializer.is_valid():

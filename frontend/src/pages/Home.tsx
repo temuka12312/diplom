@@ -1,20 +1,27 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { testApi } from "../api/test";
 
 export default function Home() {
-  const navigate = useNavigate();
+  const [data, setData] = useState<any>(null);
+  const [error, setError] = useState("");
 
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    navigate("/login");
-  };
+  useEffect(() => {
+    testApi()
+      .then((res) => setData(res))
+      .catch(() => setError("API error"));
+  }, []);
 
   return (
     <div>
       <h1>🏠 Home</h1>
-      <p>Welcome to E-Learning platform</p>
 
-      <button onClick={logout}>Logout</button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {data ? (
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   );
 }
