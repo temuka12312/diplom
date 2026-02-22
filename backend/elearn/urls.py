@@ -16,19 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponse  # add this
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.http import HttpResponse  
 
-# simple home view
 def home(request):
     return HttpResponse("Welcome to Elearn API!")
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/auth/', include('users.urls')),
-    path("api/", include("api.urls")),
-    path("api/auth/login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("api/auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("admin/", admin.site.urls),
     path("api/auth/", include("users.urls")),
-    path('', home),  # root URL
+    # Other APIs
+    path("api/", include("api.urls")),
+    path("", home),
 ]
+
