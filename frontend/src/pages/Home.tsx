@@ -1,34 +1,37 @@
 import { useEffect, useState } from "react";
-import { meApi } from "../api/auth";
+import { testApi } from "../api/test";
+import { logout } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null);
+  const [data, setData] = useState<any>(null);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-
-    if (!token) {
-      setError("Та нэвтрээгүй байна.");
-      return;
-    }
-
-    meApi()
-      .then((res) => setUser(res))
-      .catch(() => setError("Таны мэдээллийг авч чадсангүй (JWT алдаа байж магад)."));
+    testApi()
+      .then((res) => setData(res))
+      .catch(() => setError("API error"));
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <div>
       <h1>Home</h1>
 
+      <button onClick={handleLogout}>Logout</button>
+
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {user ? (
-        <pre>{JSON.stringify(user, null, 2)}</pre>
-      ) : !error ? (
+      {data ? (
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      ) : (
         <p>Loading...</p>
-      ) : null}
+      )}
     </div>
   );
 }

@@ -1,31 +1,34 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getCourses } from "../api/courses";
+import type { Course } from "../api/courses";
 
 export default function Courses() {
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
     getCourses()
-      .then((res) => setCourses(res))
-      .catch(() => setError("API error"));
+      .then((data) => setCourses(data))
+      .catch(() => setError("Failed to load courses"));
   }, []);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
       <h1>Courses</h1>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {courses.map((course) => (
-        <div key={course.id} style={{ marginBottom: "40px" }}>
+        <div key={course.id} style={{ marginBottom: 24 }}>
           <h2>
-            {/* End deer detail ruu үсэрнэ */}
             <Link to={`/courses/${course.id}`}>{course.title}</Link>
           </h2>
           <p>{course.description}</p>
-          <p>Level: {course.level}</p>
+          <p>
+            <strong>Level: </strong>
+            {course.level}
+          </p>
         </div>
       ))}
     </div>

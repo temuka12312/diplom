@@ -4,6 +4,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Courses from "../pages/Courses";
 import CourseDetail from "../pages/CourseDetail";
+import LessonDetail from "../pages/LessonDetail";
 
 export default function AppRouter() {
   return (
@@ -14,6 +15,7 @@ export default function AppRouter() {
         <Route path="/courses/:id" element={<CourseDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/courses/:courseId/lessons/:lessonId" element={<LessonDetail />} />
       </Routes>
     </BrowserRouter>
   );

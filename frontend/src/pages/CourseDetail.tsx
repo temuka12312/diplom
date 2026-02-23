@@ -1,64 +1,61 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getCourseDetail } from "../api/courses";
+import { getCourse } from "../api/courses";
+import type { Course, Lesson } from "../api/courses";
 
 export default function CourseDetail() {
-  const { id } = useParams(); // /courses/:id
-  const [course, setCourse] = useState<any>(null);
+  const { id } = useParams<{ id: string }>();
+  const [course, setCourse] = useState<Course | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!id) return;
 
-    getCourseDetail(Number(id))
-      .then((res) => setCourse(res))
-      .catch(() => setError("API error"));
+    getCourse(id)
+      .then((data) => setCourse(data))
+      .catch(() => setError("Failed to load course"));
   }, [id]);
 
   if (error) {
-    return (
-      <div>
-        <h1>Course Detail</h1>
-        <p style={{ color: "red" }}>{error}</p>
-      </div>
-    );
+    return <p style={{ color: "red" }}>{error}</p>;
   }
 
   if (!course) {
-    return (
-      <div>
-        <h1>Course Detail</h1>
-        <p>Loading...</p>
-      </div>
-    );
+    return <p>Loading...</p>;
   }
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
       <Link to="/courses">← Back to courses</Link>
 
       <h1>{course.title}</h1>
       <p>{course.description}</p>
       <p>
-        <b>Level:</b> {course.level}
+        <strong>Level:</strong> {course.level}
       </p>
 
       <h2>Lessons</h2>
-      {course.lessons && course.lessons.length > 0 ? (
-        <ul>
-          {course.lessons.map((lesson: any) => (
-            <li key={lesson.id} style={{ marginBottom: "10px" }}>
-              <b>{lesson.title}</b> <br />
-              {lesson.video_url && (
-                <a href={lesson.video_url} target="_blank" rel="noreferrer">
-                  ▶ Watch video
-                </a>
-              )}
-            </li>
-          ))}
-        </ul>
+      {course.lessons.length === 0 ? (
+        <p>No lessons yet.</p>
       ) : (
-        <p>No lessons yet</p>
+        <ol>
+          {course.lessons.map((lesson: Lesson) => (
+            <li key={lesson.id}>
+                <Link to={`/courses/${course.id}/lessons/${lesson.id}`}>
+                <strong>{lesson.title}</strong>
+                </Link>
+                {lesson.video_url && (
+                <>
+                    {" "}
+                    –{" "}
+                    <a href={lesson.video_url} target="_blank" rel="noreferrer">
+                    Video
+                    </a>
+                </>
+                )}
+            </li>
+            ))}
+        </ol>
       )}
     </div>
   );
