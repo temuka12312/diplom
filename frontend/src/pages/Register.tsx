@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { register } from "../api/auth";
+import { registerApi } from "../api/auth";
 
 export default function Register() {
   const navigate = useNavigate();
+
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -11,7 +13,7 @@ export default function Register() {
     e.preventDefault();
 
     try {
-      await register(email, password);
+      await registerApi(username, email, password);
       navigate("/login");
     } catch {
       alert("Register failed");
@@ -21,6 +23,12 @@ export default function Register() {
   return (
     <form onSubmit={handleSubmit}>
       <h1>Register</h1>
+
+      <input
+        placeholder="Username"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
 
       <input
         placeholder="Email"
