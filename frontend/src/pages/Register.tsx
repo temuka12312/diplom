@@ -1,3 +1,4 @@
+// frontend/src/pages/Register.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerApi } from "../api/auth";
@@ -14,8 +15,9 @@ export default function Register() {
 
     try {
       await registerApi(username, email, password);
+      alert("User created, одоо нэвтэрнэ үү");
       navigate("/login");
-    } catch {
+    } catch (err) {
       alert("Register failed");
     }
   };

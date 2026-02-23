@@ -4,4 +4,7 @@ from rest_framework.response import Response
 
 @api_view(["GET"])
 def test(request):
-    return Response({"status": "ok", "message": "Elearn API working"})
+    return Response({
+        "status": "ok",
+        "message": "Elearn API working"
+    })

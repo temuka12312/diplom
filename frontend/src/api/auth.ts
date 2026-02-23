@@ -1,3 +1,4 @@
+// frontend/src/api/auth.ts
 import api from "./axios";
 
 export const loginApi = async (username: string, password: string) => {
@@ -5,7 +6,7 @@ export const loginApi = async (username: string, password: string) => {
     username,
     password,
   });
-  return res.data;
+  return res.data; // { access, refresh }
 };
 
 export const registerApi = async (
@@ -19,4 +20,9 @@ export const registerApi = async (
     password,
   });
   return res.data;
+};
+
+export const meApi = async () => {
+  const res = await api.get("/auth/me/");
+  return res.data; // User-ийн мэдээлэл
 };

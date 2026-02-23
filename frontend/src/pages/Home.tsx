@@ -1,14 +1,22 @@
+// frontend/src/pages/Home.tsx
 import { useEffect, useState } from "react";
-import { testApi } from "../api/test";
+import { meApi } from "../api/auth";
 
 export default function Home() {
-  const [data, setData] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    testApi()
-      .then((res) => setData(res))
-      .catch(() => setError("API error"));
+    const token = localStorage.getItem("access_token");
+
+    if (!token) {
+      setError("Та нэвтрээгүй байна.");
+      return;
+    }
+
+    meApi()
+      .then((res) => setUser(res))
+      .catch(() => setError("Таны мэдээллийг авч чадсангүй (JWT алдаа байж магад)."));
   }, []);
 
   return (
@@ -17,11 +25,11 @@ export default function Home() {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {data ? (
-        <pre>{JSON.stringify(data, null, 2)}</pre>
-      ) : (
+      {user ? (
+        <pre>{JSON.stringify(user, null, 2)}</pre>
+      ) : !error ? (
         <p>Loading...</p>
-      )}
+      ) : null}
     </div>
   );
 }
