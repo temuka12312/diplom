@@ -1,4 +1,3 @@
-// frontend/src/pages/Home.tsx
 import { useEffect, useState } from "react";
 import { meApi } from "../api/auth";
 
