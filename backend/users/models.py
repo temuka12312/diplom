@@ -10,7 +10,6 @@ class User(AbstractUser):
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student')
 
-    # AI-д хэрэгтэй талбарууд
     skill_level = models.CharField(
         max_length=20,
         choices=(
