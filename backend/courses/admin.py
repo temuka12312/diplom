@@ -12,7 +12,7 @@ class CourseAdmin(admin.ModelAdmin):
     list_display = ("title", "level")
     inlines = [LessonInline]
 
-
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ("title", "course", "order", "video_url")
+    list_display = ("title", "course", "order", "score")
+    list_editable = ("score",)  # 👈 list view дээрээс шууд өөрчилж болдог

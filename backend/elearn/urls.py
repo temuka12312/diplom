@@ -26,6 +26,7 @@ urlpatterns = [
     path("api/auth/", include("users.urls")),
     # Other APIs
     path("api/", include("api.urls")),
+    path("api/progress/", include("progress.urls")),
     path("api/courses/", include("courses.urls")),
     path("", home),
 ]

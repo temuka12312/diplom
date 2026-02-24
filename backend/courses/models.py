@@ -30,16 +30,14 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
-    course = models.ForeignKey(
-        Course,
-        on_delete=models.CASCADE,
-        related_name="lessons",
-    )
-    title = models.CharField(max_length=200)
+    course = models.ForeignKey(Course, related_name="lessons", on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
     content = models.TextField(blank=True)
-    order = models.IntegerField(default=1)
-    # ⬇️ ШИНЭ ТАЛБАР: видео хаяг (YouTube, Vimeo, mp4 линк г.м)
     video_url = models.URLField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+
+    # 🔥 ШИНЭ: админаас тохируулах оноо
+    score = models.PositiveIntegerField(default=10)
 
     def __str__(self):
-        return f"{self.course.title} - {self.title}"
+        return self.title
