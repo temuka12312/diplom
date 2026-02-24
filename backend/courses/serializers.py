@@ -10,7 +10,7 @@ class LessonSerializer(serializers.ModelSerializer):
             "title",
             "content",
             "order",
-            "video_url",  # ⬅️ энд оруулсан байна
+            "video_url",
         )
 
 
