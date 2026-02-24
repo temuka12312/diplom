@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { testApi } from "../api/test";
-import { logout } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 export default function Home() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
     testApi()
@@ -14,16 +12,11 @@ export default function Home() {
       .catch(() => setError("API error"));
   }, []);
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
   return (
     <div>
-      <h1>Home</h1>
+      <Navbar />
 
-      <button onClick={handleLogout}>Logout</button>
+      <h1>Home</h1>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getCourse } from "../api/courses";
 import type { Course, Lesson } from "../api/courses";
+import Navbar from "../components/Navbar";
 
 export default function CourseDetail() {
   const { id } = useParams<{ id: string }>();
@@ -26,37 +27,38 @@ export default function CourseDetail() {
 
   return (
     <div>
-      <Link to="/courses">← Back to courses</Link>
+      <Navbar />
+        <Link to="/courses">← Back to courses</Link>
 
-      <h1>{course.title}</h1>
-      <p>{course.description}</p>
-      <p>
-        <strong>Level:</strong> {course.level}
-      </p>
+        <h1>{course.title}</h1>
+        <p>{course.description}</p>
+        <p>
+          <strong>Level:</strong> {course.level}
+        </p>
 
-      <h2>Lessons</h2>
-      {course.lessons.length === 0 ? (
-        <p>No lessons yet.</p>
-      ) : (
-        <ol>
-          {course.lessons.map((lesson: Lesson) => (
-            <li key={lesson.id}>
-                <Link to={`/courses/${course.id}/lessons/${lesson.id}`}>
-                <strong>{lesson.title}</strong>
-                </Link>
-                {lesson.video_url && (
-                <>
-                    {" "}
-                    –{" "}
-                    <a href={lesson.video_url} target="_blank" rel="noreferrer">
-                    Video
-                    </a>
-                </>
-                )}
-            </li>
-            ))}
-        </ol>
-      )}
+        <h2>Lessons</h2>
+        {course.lessons.length === 0 ? (
+          <p>No lessons yet.</p>
+        ) : (
+          <ol>
+            {course.lessons.map((lesson: Lesson) => (
+              <li key={lesson.id}>
+                  <Link to={`/courses/${course.id}/lessons/${lesson.id}`}>
+                  <strong>{lesson.title}</strong>
+                  </Link>
+                  {lesson.video_url && (
+                  <>
+                      {" "}
+                      –{" "}
+                      <a href={lesson.video_url} target="_blank" rel="noreferrer">
+                      Video
+                      </a>
+                  </>
+                  )}
+              </li>
+              ))}
+          </ol>
+        )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getCourses } from "../api/courses";
 import type { Course } from "../api/courses";
+import Navbar from "../components/Navbar";
 
 export default function Courses() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -15,22 +16,25 @@ export default function Courses() {
 
   return (
     <div>
-      <h1>Courses</h1>
+      <Navbar />
+        <div>
+        <h1>Courses</h1>
+        
+        {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {courses.map((course) => (
-        <div key={course.id} style={{ marginBottom: 24 }}>
-          <h2>
-            <Link to={`/courses/${course.id}`}>{course.title}</Link>
-          </h2>
-          <p>{course.description}</p>
-          <p>
-            <strong>Level: </strong>
-            {course.level}
-          </p>
-        </div>
-      ))}
+        {courses.map((course) => (
+          <div key={course.id} style={{ marginBottom: 24 }}>
+            <h2>
+              <Link to={`/courses/${course.id}`}>{course.title}</Link>
+            </h2>
+            <p>{course.description}</p>
+            <p>
+              <strong>Level: </strong>
+              {course.level}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getLesson } from "../api/courses";
 import type { Lesson } from "../api/courses";
+import Navbar from "../components/Navbar";
 
 export default function LessonDetail() {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
@@ -26,24 +27,24 @@ export default function LessonDetail() {
 
   return (
     <div>
-      <Link to={`/courses/${courseId}`}>← Back to course</Link>
+      <Navbar />
+        <Link to={`/courses/${courseId}`}>← Back to course</Link>
 
-      <h1>{lesson.title}</h1>
-      <p>{lesson.content}</p>
+        <h1>{lesson.title}</h1>
+        <p>{lesson.content}</p>
 
-      {lesson.video_url && (
-        <div style={{ marginTop: 20 }}>
-          <h2>Video</h2>
-          {/* YouTube link бол иймэрхүү embed хийж болно, энгийн линк бол a tag ашиглаарай */}
-          <iframe
-            width="560"
-            height="315"
-            src={lesson.video_url}
-            title={lesson.title}
-            allowFullScreen
-          />
-        </div>
-      )}
+        {lesson.video_url && (
+          <div style={{ marginTop: 20 }}>
+            <h2>Video</h2>
+            <iframe
+              width="560"
+              height="315"
+              src={lesson.video_url}
+              title={lesson.title}
+              allowFullScreen
+            />
+          </div>
+        )}
     </div>
   );
 }
