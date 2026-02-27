@@ -7,10 +7,14 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = (
             "id",
+            "course",
             "title",
             "content",
             "order",
             "video_url",
+            "file",        # ← PDF
+            "attachment",  # ← PPT/DOCX/ZIP г.м
+            "score",
         )
 
 

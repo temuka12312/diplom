@@ -4,8 +4,11 @@ export interface Lesson {
   id: number;
   title: string;
   content: string;
-  video_url: string;
   order: number;
+  video_url: string;
+  file?: string | null;        // PDF
+  attachment?: string | null;  // бусад материал
+  score: number;
 }
 
 export interface Course {

@@ -7,6 +7,7 @@ import CourseDetail from "../pages/CourseDetail";
 import LessonDetail from "../pages/LessonDetail";
 import Navbar from "../components/Navbar";
 import ProtectedRoute from "./ProtectedRoute";
+import ProgressSummaryPage from "../pages/ProgressSummary";
 
 function Layout() {
   const location = useLocation();
@@ -50,6 +51,14 @@ function Layout() {
           element={
             <ProtectedRoute>
               <LessonDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <ProgressSummaryPage />
             </ProtectedRoute>
           }
         />

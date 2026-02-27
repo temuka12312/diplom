@@ -52,7 +52,6 @@ def complete_lesson(request, lesson_id):
         lesson=lesson,
     )
 
-    # 🔥 Хичээлийн өөрийн оноо
     score = lesson.score or 0
 
     progress.is_completed = True
@@ -72,7 +71,6 @@ def complete_lesson(request, lesson_id):
     )
     user.total_score = agg["total"] or 0
 
-    # skill_level + role автоматаар шинэчлэх
     user.update_level_and_role()
 
     user.save(update_fields=["completed_lessons", "total_score", "skill_level", "role"])
@@ -94,7 +92,6 @@ def progress_summary(request):
         "completed_lessons": getattr(user, "completed_lessons", 0),
     }
 
-    # Хичээл бүрийн progress (байхгүй байж болно, гэхдээ алдаа өгөхгүй)
     courses = []
     for course in Course.objects.all():
         total = course.lessons.count()

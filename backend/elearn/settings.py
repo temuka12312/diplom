@@ -157,8 +157,6 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "design", "static"),
 )
 
-SHARED_MEDIA = os.path.normpath(os.path.join(BASE_DIR, "SHARED_MEDIA"))
-MEDIA_ROOT = os.getenv("MEDIA_ROOT", SHARED_MEDIA)
-MEDIA_URL = os.getenv("MEDIA_URL", "/media/")
-
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

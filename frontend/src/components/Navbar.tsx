@@ -20,13 +20,18 @@ export default function Navbar() {
         marginBottom: "24px",
       }}
     >
-      <strong>AI E-Learn</strong>
+      {/* Logo */}
+      <strong style={{ fontSize: "20px" }}>LOTUS-Learn</strong>
 
-      <div style={{ display: "flex", gap: "12px" }}>
+      {/* Navigation links */}
+      <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
         {isAuthenticated() ? (
           <>
             <Link to="/">Home</Link>
             <Link to="/courses">Courses</Link>
+
+            <Link to="/progress">Progress</Link>
+
             <button onClick={handleLogout}>Logout</button>
           </>
         ) : (

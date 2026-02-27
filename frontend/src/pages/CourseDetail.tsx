@@ -41,20 +41,45 @@ export default function CourseDetail() {
         <ol>
           {course.lessons.map((lesson: Lesson) => (
             <li key={lesson.id}>
-                <Link to={`/courses/${course.id}/lessons/${lesson.id}`}>
+              <Link to={`/courses/${course.id}/lessons/${lesson.id}`}>
                 <strong>{lesson.title}</strong>
-                </Link>
-                {lesson.video_url && (
+              </Link>
+
+              {/* Video URL (admin-аас оруулсан линк) */}
+              {lesson.video_url && (
                 <>
-                    {" "}
-                    –{" "}
-                    <a href={lesson.video_url} target="_blank" rel="noreferrer">
+                  {" – "}
+                  <a
+                    href={lesson.video_url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     Video
-                    </a>
+                  </a>
                 </>
-                )}
+              )}
+
+              {/* PDF файл */}
+              {lesson.file && (
+                <>
+                  {" – "}
+                  <a href={lesson.file} target="_blank" rel="noreferrer">
+                    PDF
+                  </a>
+                </>
+              )}
+
+              {/* Attachment файл */}
+              {lesson.attachment && (
+                <>
+                  {" – "}
+                  <a href={lesson.attachment} target="_blank" rel="noreferrer">
+                    Attachment
+                  </a>
+                </>
+              )}
             </li>
-            ))}
+          ))}
         </ol>
       )}
     </div>
