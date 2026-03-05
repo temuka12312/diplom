@@ -1,4 +1,3 @@
-// frontend/src/pages/Login.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginApi } from "../api/auth";
@@ -18,7 +17,7 @@ export default function Login() {
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
 
-      navigate("/"); // Амжилттай бол Home руу
+      navigate("/"); 
     } catch (err) {
       alert("Login failed");
     }

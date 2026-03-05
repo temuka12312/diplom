@@ -36,3 +36,31 @@ def register(request):
 def me(request):
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def save_level(request):
+    """
+    Placement test-ийн онооны дагуу хэрэглэгчийн skill_level-ийг хадгална.
+    has_placement_test = True болгож, дараа нь дахиж шалгалт нэхэхгүй.
+    """
+    level = request.data.get("level")
+    user: User = request.user
+
+    valid_levels = ["beginner", "intermediate", "advanced"]
+    if level not in valid_levels:
+        return Response({"detail": "Invalid level"}, status=400)
+
+    user.skill_level = level
+    user.has_placement_test = True
+    user.save(update_fields=["skill_level", "has_placement_test"])
+
+    return Response(
+        {
+            "username": user.username,
+            "skill_level": user.skill_level,
+            "has_placement_test": user.has_placement_test,
+        },
+        status=200,
+    )

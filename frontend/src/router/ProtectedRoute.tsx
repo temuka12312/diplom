@@ -1,11 +1,30 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
+import React from "react";
+import useAuth from "../hooks/useAuth";
 
-export default function ProtectedRoute({ children }: any) {
-  const token = localStorage.getItem("access_token");
+interface Props {
+  children: React.ReactNode;
+}
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
+export default function ProtectedRoute({ children }: Props) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) return <p>Loading...</p>;
+
+  if (!user) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  return children;
+  const onPlacementPage = location.pathname.startsWith("/placement-test");
+
+  if (!user.has_placement_test && !onPlacementPage) {
+    return <Navigate to="/placement-test" replace />;
+  }
+
+  if (user.has_placement_test && onPlacementPage) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
 }

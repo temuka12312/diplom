@@ -9,3 +9,4 @@ djangorestframework
 djangorestframework-simplejwt
 psycopg2-binary
 django-cors-headers
+google-genai>=1.0.0

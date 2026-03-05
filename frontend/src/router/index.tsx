@@ -1,4 +1,11 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+// frontend/src/router/index.tsx
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -8,11 +15,11 @@ import LessonDetail from "../pages/LessonDetail";
 import Navbar from "../components/Navbar";
 import ProtectedRoute from "./ProtectedRoute";
 import ProgressSummaryPage from "../pages/ProgressSummary";
+import PlacementTest from "../pages/PlacementTest";
 
 function Layout() {
   const location = useLocation();
 
-  // /courses/:courseId/lessons/:lessonId route дээр navbar нууя
   const hideNavbar =
     location.pathname.startsWith("/courses/") &&
     location.pathname.includes("/lessons/");
@@ -62,6 +69,16 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/placement-test"
+          element={
+            <ProtectedRoute>
+              <PlacementTest />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Routes>

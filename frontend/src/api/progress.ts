@@ -4,7 +4,7 @@ export interface LessonProgress {
   id: number;
   lesson: number;
   is_completed: boolean;
-  score: number;
+  score: number;              
   completed_at: string | null;
 }
 
@@ -14,6 +14,7 @@ export interface CourseProgress {
   total_lessons: number;
   completed_lessons: number;
   progress_percent: number;
+  course_score: number;
 }
 
 export const getLessonProgress = async (
@@ -45,5 +46,16 @@ export interface ProgressSummary {
 
 export const getProgressSummary = async (): Promise<ProgressSummary> => {
   const res = await api.get("/progress/summary/");
+  return res.data;
+};
+
+
+export const saveQuizScore = async (
+  lessonId: number | string,
+  score: number
+) => {
+  const res = await api.post(`/progress/lessons/${lessonId}/quiz-score/`, {
+    score,
+  });
   return res.data;
 };

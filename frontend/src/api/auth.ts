@@ -1,4 +1,3 @@
-// frontend/src/api/auth.ts
 import api from "./axios";
 
 export const loginApi = async (username: string, password: string) => {
@@ -6,7 +5,7 @@ export const loginApi = async (username: string, password: string) => {
     username,
     password,
   });
-  return res.data; // { access, refresh }
+  return res.data; 
 };
 
 export const registerApi = async (
@@ -22,7 +21,23 @@ export const registerApi = async (
   return res.data;
 };
 
-export const meApi = async () => {
+export interface MeResponse {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  skill_level: string | null;
+  total_score: number;
+  completed_lessons: number;
+  has_placement_test: boolean;
+}
+
+export const meApi = async (): Promise<MeResponse> => {
   const res = await api.get("/auth/me/");
-  return res.data; // User-ийн мэдээлэл
+  return res.data; 
+};
+
+export const saveLevel = async (level: string) => {
+  const res = await api.post("/auth/save-level/", { level });
+  return res.data;
 };

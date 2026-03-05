@@ -38,4 +38,5 @@ class UserSerializer(serializers.ModelSerializer):
             "skill_level",
             "total_score",
             "completed_lessons",
+            "has_placement_test",
         )

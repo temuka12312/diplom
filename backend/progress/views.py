@@ -7,15 +7,9 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import LessonProgress
-from courses.models import Lesson
 from .serializers import LessonProgressSerializer
-
-from django.db.models import Count, Sum, Q
-from django.db.models.functions import Coalesce
-
 from courses.models import Course, Lesson
-from .models import LessonProgress
-from users.models import User 
+from users.models import User
 
 
 @api_view(["GET"])
@@ -42,6 +36,11 @@ def lesson_progress_detail(request, lesson_id):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def complete_lesson(request, lesson_id):
+    """
+    Lesson-г дууссан гэж тэмдэглэх.
+    - Хэрэв request.data["score"] байвал тэрийг ашиглана (quiz-ийн хувь).
+    - Байхгүй бол lesson.score default оноог ашиглана.
+    """
     try:
         lesson = Lesson.objects.get(pk=lesson_id)
     except Lesson.DoesNotExist:
@@ -52,10 +51,17 @@ def complete_lesson(request, lesson_id):
         lesson=lesson,
     )
 
-    score = lesson.score or 0
+    raw_score = request.data.get("score", None)
+    try:
+        if raw_score is None:
+            score_value = float(lesson.score or 0)
+        else:
+            score_value = float(raw_score)
+    except (TypeError, ValueError):
+        score_value = float(lesson.score or 0)
 
     progress.is_completed = True
-    progress.score = score
+    progress.score = score_value
     progress.completed_at = timezone.now()
     progress.save()
 
@@ -95,13 +101,14 @@ def progress_summary(request):
     courses = []
     for course in Course.objects.all():
         total = course.lessons.count()
-        completed = LessonProgress.objects.filter(
-            user=user, lesson__course=course, is_completed=True
-        ).count()
+        completed = LessonProgress.objects.filter(user=user, lesson__course=course, is_completed=True).count()
 
         percent = 0
         if total > 0:
             percent = round(completed / total * 100, 2)
+
+        score_agg = LessonProgress.objects.filter( user=user, lesson__course=course).aggregate(total=models.Sum("score"))
+        course_score = score_agg["total"] or 0
 
         courses.append(
             {
@@ -110,9 +117,9 @@ def progress_summary(request):
                 "total_lessons": total,
                 "completed_lessons": completed,
                 "progress_percent": percent,
+                "course_score": course_score,
             }
         )
 
     data["courses"] = courses
-
     return Response(data)

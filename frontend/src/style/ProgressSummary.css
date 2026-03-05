@@ -1,0 +1,136 @@
+/* ProgressSummary.css */
+
+.progress-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* === PROFILE === */
+
+.profile-section {
+  margin-bottom: 24px;
+}
+
+.profile-section h2 {
+  margin-bottom: 8px;
+}
+
+/* === COURSES TABLE === */
+
+.courses-section h2 {
+  margin-bottom: 8px;
+}
+
+.progress-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.progress-table th,
+.progress-table td {
+  border-bottom: 1px solid #eee;
+  padding: 8px;
+}
+
+.progress-table th {
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.progress-table td.center {
+  text-align: center;
+}
+
+/* Progress bar */
+
+.progress-bar-wrapper {
+  background: #f0f0f0;
+  height: 14px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #4caf50;
+}
+
+.progress-percent {
+  font-size: 12px;
+}
+
+/* === QUIZ SCORE BADGES === */
+
+.quiz-score-badge {
+  display: inline-block;
+  min-width: 55px;
+  text-align: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* High score */
+.quiz-score-high {
+  background: #e6f7e9;
+  color: #1b7a2f;
+}
+
+/* Medium score */
+.quiz-score-mid {
+  background: #fff7e0;
+  color: #a07300;
+}
+
+/* Low score */
+.quiz-score-low {
+  background: #fee9e7;
+  color: #b54033;
+}
+
+/* 0% or no score */
+.quiz-score-none {
+  background: #f2f2f2;
+  color: #777;
+}
+
+/* === RECOMMENDATIONS === */
+
+.recs-section {
+  margin-top: 32px;
+}
+
+.recs-list {
+  list-style: disc;
+  padding-left: 20px;
+}
+
+.recs-list-item {
+  margin-bottom: 8px;
+}
+
+.recs-course-link {
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+.recs-lesson-link {
+  margin-left: 6px;
+}
+
+.recs-level {
+  margin-left: 6px;
+  color: gray;
+}
+
+/* simple text styles */
+
+.loading-text {
+  font-style: italic;
+}
+
+.error-text {
+  color: red;
+}

@@ -5,7 +5,7 @@ from django.db import models
 class User(AbstractUser):
     ROLE_CHOICES = (
         ("student", "Student"),
-        ("mentor", "Mentor"),  
+        ("mentor", "Mentor"),
         ("admin", "Admin"),
     )
 
@@ -19,7 +19,11 @@ class User(AbstractUser):
             ("advanced", "Advanced"),
         ),
         default="beginner",
+        blank=True,
+        null=True,          # ← түвшин хараахан тогтоогдоогүй байж болно
     )
+
+    has_placement_test = models.BooleanField(default=False)
 
     total_score = models.FloatField(default=0)
     completed_lessons = models.IntegerField(default=0)
