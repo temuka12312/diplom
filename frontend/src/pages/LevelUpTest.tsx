@@ -1,35 +1,47 @@
 import { useEffect, useState } from "react";
-import { getPlacementTest, type PlacementQuestion } from "../api/ai";
+import { useNavigate } from "react-router-dom";
+import { getLevelUpTest, type QuizQuestion } from "../api/ai";
 import { saveLevel } from "../api/auth";
 
-export default function PlacementTest() {
-  const [questions, setQuestions] = useState<PlacementQuestion[]>([]);
+export default function LevelUpTest() {
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [currentLevel, setCurrentLevel] = useState("");
+  const [nextLevel, setNextLevel] = useState("");
+  const [answers, setAnswers] = useState<Record<number, number | null>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [answers, setAnswers] = useState<Record<number, number | null>>({});
   const [result, setResult] = useState<string | null>(null);
 
   const [showModal, setShowModal] = useState(false);
+  const [passed, setPassed] = useState(false);
   const [scoreData, setScoreData] = useState<{
     correct: number;
     total: number;
     percent: number;
-    level: string;
   } | null>(null);
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    getPlacementTest()
-      .then((res) => setQuestions(res.questions || []))
-      .catch(() => setError("Failed to load placement test"))
+    getLevelUpTest()
+      .then((res) => {
+        setQuestions(res.questions || []);
+        setCurrentLevel(res.current_level);
+        setNextLevel(res.next_level);
+      })
+      .catch(() => setError("Failed to load level-up test"))
       .finally(() => setLoading(false));
   }, []);
 
   const handleSelect = (qId: number, optionIndex: number) => {
-    setAnswers((prev) => ({ ...prev, [qId]: optionIndex }));
+    setAnswers((prev) => ({
+      ...prev,
+      [qId]: optionIndex,
+    }));
   };
 
   const handleSubmit = async () => {
-    if (questions.length === 0) return;
+    if (!questions.length) return;
 
     let correct = 0;
     questions.forEach((q) => {
@@ -39,46 +51,50 @@ export default function PlacementTest() {
     });
 
     const percent = Math.round((correct / questions.length) * 100);
+    const didPass = percent >= 70;
 
-    let level = "beginner";
-    if (percent >= 70) level = "advanced";
-    else if (percent >= 40) level = "intermediate";
+    setPassed(didPass);
+    setScoreData({
+      correct,
+      total: questions.length,
+      percent,
+    });
 
-    const message = `Зөв хариулт: ${correct}/${questions.length} (${percent}%).\nТаны түвшин: ${level}.`;
-
-    try {
-      await saveLevel(level);
-
-      setResult(message);
-      setScoreData({
-        correct,
-        total: questions.length,
-        percent,
-        level,
-      });
-      setShowModal(true);
-    } catch (e) {
-      console.error("Failed to save level", e);
-      setError("Түвшин хадгалах үед алдаа гарлаа.");
+    if (didPass) {
+      try {
+        await saveLevel(nextLevel);
+        setResult(
+          `Тэнцлээ! ${correct}/${questions.length} (${percent}%). Таны шинэ түвшин: ${nextLevel}`
+        );
+      } catch (e) {
+        setResult("Level хадгалах үед алдаа гарлаа.");
+      }
+    } else {
+      setResult(
+        `Тэнцээгүй. ${correct}/${questions.length} (${percent}%). Дахин оролдоно уу.`
+      );
     }
+
+    setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    window.location.replace("/");
+    window.location.replace("/progress");
   };
 
-  if (loading) return <p>Placement test ачаалж байна...</p>;
+  if (loading) return <p>Loading level-up test...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
-
-  if (!loading && !error && questions.length === 0) {
-    return <p>Одоогоор placement test-ийн асуулт алга байна.</p>;
-  }
 
   return (
     <div style={{ maxWidth: 800, margin: "0 auto", position: "relative" }}>
-      <h1>Түвшин тогтоох шалгалт</h1>
-      <p>Доорх асуултуудад хариулаад өөрийн түвшинг тогтоолгоно уу.</p>
+      <h1>Level Up Test</h1>
+      <p>
+        Current level: <strong>{currentLevel}</strong>
+      </p>
+      <p>
+        Target level: <strong>{nextLevel}</strong>
+      </p>
 
       {questions.map((q) => (
         <div
@@ -86,17 +102,18 @@ export default function PlacementTest() {
           style={{
             border: "1px solid #eee",
             padding: 12,
-            borderRadius: 4,
+            borderRadius: 6,
             marginBottom: 12,
           }}
         >
           <p>
             <strong>Q{q.id}:</strong> {q.question}
           </p>
+
           <ul style={{ listStyle: "none", paddingLeft: 0 }}>
             {q.options.map((opt, idx) => (
               <li key={idx} style={{ marginBottom: 4 }}>
-                <label style={{ cursor: "pointer" }}>
+                <label>
                   <input
                     type="radio"
                     name={`q-${q.id}`}
@@ -112,12 +129,10 @@ export default function PlacementTest() {
         </div>
       ))}
 
-      <button onClick={handleSubmit} style={{ marginTop: 8 }}>
-        Шалгалтаа явуулах
-      </button>
+      <button onClick={handleSubmit}>Submit Level-Up Test</button>
 
       {result && (
-        <p style={{ marginTop: 12, fontWeight: "bold", whiteSpace: "pre-line" }}>
+        <p style={{ marginTop: 12, fontWeight: "bold" }}>
           {result}
         </p>
       )}
@@ -139,12 +154,13 @@ export default function PlacementTest() {
               background: "white",
               borderRadius: 8,
               padding: 24,
-              maxWidth: 400,
+              maxWidth: 420,
               width: "100%",
               boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
             }}
           >
-            <h2 style={{ marginTop: 0 }}>Шалгалтын үр дүн</h2>
+            <h2 style={{ marginTop: 0 }}>Level-Up Test Result</h2>
+
             <p>
               Зөв хариулт:{" "}
               <strong>
@@ -152,12 +168,18 @@ export default function PlacementTest() {
               </strong>{" "}
               ({scoreData.percent}%)
             </p>
-            <p>
-              Таны түвшин: <strong>{scoreData.level}</strong>
-            </p>
-            <p style={{ fontSize: 13, color: "#555" }}>
-              Энэ түвшингээр тань тохирсон хичээлүүдийг санал болгоно.
-            </p>
+
+            {passed ? (
+              <p>
+                🎉 Congratulations! Your new level is{" "}
+                <strong>{nextLevel}</strong>.
+              </p>
+            ) : (
+              <p>
+                ❌ You did not pass this time. Please review your lessons and try
+                again.
+              </p>
+            )}
 
             <button
               onClick={handleCloseModal}
@@ -171,7 +193,7 @@ export default function PlacementTest() {
                 cursor: "pointer",
               }}
             >
-              OK, эхлэл рүү очих
+              OK, Back to Progress
             </button>
           </div>
         </div>

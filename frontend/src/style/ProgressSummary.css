@@ -15,6 +15,48 @@
   margin-bottom: 8px;
 }
 
+/* === LEVEL UP BOX === */
+
+.level-up-box {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.level-up-title {
+  margin: 0 0 8px 0;
+}
+
+.level-up-text {
+  margin-bottom: 12px;
+  color: #555;
+}
+
+.level-up-link {
+  text-decoration: none;
+}
+
+.level-up-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #4caf50;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.level-up-button:hover {
+  background: #43a047;
+}
+
+.level-up-max {
+  color: #1b7a2f;
+  font-weight: 600;
+}
+
 /* === COURSES TABLE === */
 
 .courses-section h2 {
@@ -42,7 +84,7 @@
   text-align: center;
 }
 
-/* Progress bar */
+/* === PROGRESS BAR === */
 
 .progress-bar-wrapper {
   background: #f0f0f0;
@@ -125,7 +167,7 @@
   color: gray;
 }
 
-/* simple text styles */
+/* === SIMPLE TEXT STYLES === */
 
 .loading-text {
   font-style: italic;

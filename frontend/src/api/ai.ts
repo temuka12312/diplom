@@ -49,7 +49,6 @@ export const getRecommendations = async (): Promise<RecommendedLesson[]> => {
   return res.data.results;
 };
 
-
 export interface PlacementQuestion {
   id: number;
   question: string;
@@ -64,5 +63,18 @@ export interface PlacementTestResponse {
 
 export const getPlacementTest = async (): Promise<PlacementTestResponse> => {
   const res = await api.get("/ai/placement-test/");
+  return res.data;
+};
+
+// ---- LEVEL UP TEST ----
+
+export interface LevelUpTestResponse {
+  current_level: string;
+  next_level: string;
+  questions: QuizQuestion[];
+}
+
+export const getLevelUpTest = async (): Promise<LevelUpTestResponse> => {
+  const res = await api.get("/ai/level-up-test/");
   return res.data;
 };

@@ -5,12 +5,29 @@ from .serializers import CourseSerializer, LessonSerializer
 
 
 class CourseListView(generics.ListCreateAPIView):
-    queryset = Course.objects.all().order_by("-created_at")
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        qs = Course.objects.all().order_by("-created_at")
+
+        # query param-аар override хийж болно
+        level = self.request.query_params.get("level")
+        my_level_only = self.request.query_params.get("my_level")
+
+        # /api/courses/?my_level=1  -> user.skill_level-р filter
+        if my_level_only == "1":
+            user_level = getattr(self.request.user, "skill_level", None)
+            if user_level:
+                qs = qs.filter(level=user_level)
+
+        # /api/courses/?level=beginner  -> шууд level-р filter
+        elif level in ["beginner", "intermediate", "advanced"]:
+            qs = qs.filter(level=level)
+
+        return qs
+
     def perform_create(self, serializer):
-        # course үүсгэхэд автоматаар created_by = request.user
         serializer.save(created_by=self.request.user)
 
 
@@ -26,16 +43,12 @@ class LessonDetailView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
 
-# ШИНЭ: Lesson үүсгэх (upload хийх, list хийх)
 class LessonListCreateView(generics.ListCreateAPIView):
     queryset = Lesson.objects.all().order_by("order")
     serializer_class = LessonSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """
-        ?course=<id> параметрээр тухайн курсын хичээлүүдийг шүүж авах
-        """
         qs = super().get_queryset()
         course_id = self.request.query_params.get("course")
         if course_id:
@@ -43,5 +56,4 @@ class LessonListCreateView(generics.ListCreateAPIView):
         return qs
 
     def perform_create(self, serializer):
-        # Frontend-ээс course-г FormData дотор явуулна
         serializer.save()

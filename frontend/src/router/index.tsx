@@ -1,10 +1,4 @@
-// frontend/src/router/index.tsx
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
 import Home from "../pages/Home";
 import Login from "../pages/Login";
@@ -16,6 +10,7 @@ import Navbar from "../components/Navbar";
 import ProtectedRoute from "./ProtectedRoute";
 import ProgressSummaryPage from "../pages/ProgressSummary";
 import PlacementTest from "../pages/PlacementTest";
+import LevelUpTest from "../pages/LevelUpTest";
 
 function Layout() {
   const location = useLocation();
@@ -69,12 +64,19 @@ function Layout() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/placement-test"
           element={
             <ProtectedRoute>
               <PlacementTest />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/level-up-test"
+          element={
+            <ProtectedRoute>
+              <LevelUpTest />
             </ProtectedRoute>
           }
         />

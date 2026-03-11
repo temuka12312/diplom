@@ -65,6 +65,23 @@ export default function ProgressSummaryPage() {
         <p>
           <strong>Completed lessons:</strong> {data.completed_lessons}
         </p>
+
+        <div className="level-up-box">
+          <h3 className="level-up-title">Level Progress</h3>
+
+          {data.skill_level !== "advanced" ? (
+            <>
+              <p className="level-up-text">
+                Take a level-up test to unlock higher-level courses.
+              </p>
+              <Link to="/level-up-test" className="level-up-link">
+                <button className="level-up-button">Take Level-Up Test</button>
+              </Link>
+            </>
+          ) : (
+            <p className="level-up-max">You are already at the highest level.</p>
+          )}
+        </div>
       </section>
 
       {/* COURSES TABLE */}
