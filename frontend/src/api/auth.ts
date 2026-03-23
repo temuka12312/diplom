@@ -30,6 +30,8 @@ export interface MeResponse {
   total_score: number;
   completed_lessons: number;
   has_placement_test: boolean;
+  is_staff: boolean;
+  is_superuser: boolean;
 }
 
 export const meApi = async (): Promise<MeResponse> => {

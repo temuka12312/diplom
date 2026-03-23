@@ -7,9 +7,8 @@ import type { Lesson } from "../api/courses";
 import {
   getLessonSummary,
   getLessonQuiz,
-  type QuizQuestion,
+  type LessonQuizQuestion,
 } from "../api/ai";
-import { saveQuizScore } from "../api/progress";
 
 export default function LessonDetail() {
   const { courseId, lessonId } = useParams<{
@@ -27,7 +26,7 @@ export default function LessonDetail() {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState("");
 
-  const [quiz, setQuiz] = useState<QuizQuestion[] | null>(null);
+  const [quiz, setQuiz] = useState<LessonQuizQuestion[] | null>(null);
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizError, setQuizError] = useState("");
   const [answers, setAnswers] = useState<Record<number, number | null>>({});
@@ -62,11 +61,9 @@ export default function LessonDetail() {
 
     try {
       const updated = await completeLesson(lesson.id, lesson.score);
-
       setProgress(updated);
       setIsCompleted(updated.is_completed);
       setQuizScore(updated.score);
-
       alert("Lesson marked as completed!");
     } catch (err) {
       console.error("Complete lesson error >>>", err);
@@ -135,138 +132,167 @@ export default function LessonDetail() {
     try {
       const updated = await completeLesson(lessonId!, percent);
       setProgress(updated);
+      setIsCompleted(updated.is_completed);
     } catch (err) {
       console.error("Failed to save quiz score", err);
     }
   };
 
-  if (loading || !lesson) return <p>Loading...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) {
+    return (
+      <div className="container page-shell">
+        <p className="loading-text">Loading lesson...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container page-shell">
+        <p className="error-text">{error}</p>
+      </div>
+    );
+  }
+
+  if (!lesson) {
+    return (
+      <div className="container page-shell">
+        <p>Lesson not found.</p>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <Link to={`/courses/${courseId}`}>← Back to course</Link>
+    <div className="container page-shell">
+      <div className="back-link-wrap">
+        <Link className="back-link" to={`/courses/${courseId}`}>
+          ← Back to course
+        </Link>
+      </div>
 
-      <h1>{lesson.title}</h1>
-      <p>{lesson.content}</p>
+      <div className="card lesson-hero-card">
+        <div className="lesson-hero-top">
+          <div>
+            <span className="page-kicker">Lesson Detail</span>
+            <h1 className="page-title lesson-title">{lesson.title}</h1>
+          </div>
 
-      {isCompleted ? (
-        <button disabled style={{ background: "#4CAF50", color: "white" }}>
-          Completed ✓
-        </button>
-      ) : (
-        <button onClick={handleComplete}>Mark as completed</button>
-      )}
-
-      {quizScore !== null && (
-        <p style={{ marginTop: 8 }}>
-          <strong>Quiz score:</strong> {quizScore}%
-        </p>
-      )}
-
-      <h2>Video</h2>
-      {lesson.video_url ? (
-        <iframe
-          width="800"
-          height="450"
-          src={lesson.video_url}
-          allowFullScreen
-        ></iframe>
-      ) : (
-        <p>No video for this lesson.</p>
-      )}
-
-      <hr style={{ margin: "24px 0" }} />
-      <h2>AI Summary</h2>
-
-      {summaryError && <p style={{ color: "red" }}>{summaryError}</p>}
-
-      {summary ? (
-        <p>{summary}</p>
-      ) : (
-        <p>
-          Click the button below to generate an AI-based summary of this
-          lesson.
-        </p>
-      )}
-
-      <button onClick={handleGenerateSummary} disabled={summaryLoading}>
-        {summaryLoading ? "Generating summary..." : "Generate AI Summary"}
-      </button>
-
-      <hr style={{ margin: "32px 0" }} />
-      <h2>AI Quiz</h2>
-
-      <button onClick={handleGenerateQuiz} disabled={quizLoading}>
-        {quizLoading ? "Generating quiz..." : "Generate AI Quiz"}
-      </button>
-
-      {quizError && <p style={{ color: "red" }}>{quizError}</p>}
-
-      {quiz && quiz.length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          {quiz.map((q) => (
-            <div
-              key={q.id}
-              style={{
-                border: "1px solid #eee",
-                padding: 12,
-                borderRadius: 4,
-                marginBottom: 12,
-              }}
-            >
-              <p>
-                <strong>Q{q.id}:</strong> {q.question}
-              </p>
-
-              <ul style={{ listStyle: "none", paddingLeft: 0 }}>
-                {q.options.map((opt, idx) => {
-                  const selected = answers[q.id] === idx;
-                  const isCorrect = q.answer_index === idx;
-
-                  return (
-                    <li key={idx} style={{ marginBottom: 4 }}>
-                      <label style={{ cursor: "pointer" }}>
-                        <input
-                          type="radio"
-                          name={`q-${q.id}`}
-                          checked={selected || false}
-                          onChange={() => handleSelectOption(q.id, idx)}
-                          style={{ marginRight: 6 }}
-                        />
-                        {opt}
-                      </label>
-
-                      {quizResult && selected && isCorrect && (
-                        <span style={{ color: "green", marginLeft: 8 }}>
-                          ✓
-                        </span>
-                      )}
-                      {quizResult && selected && !isCorrect && (
-                        <span style={{ color: "red", marginLeft: 8 }}>✗</span>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-
-              {quizResult && (
-                <p style={{ fontSize: 12, color: "#555" }}>
-                  <strong>Explanation:</strong> {q.explanation}
-                </p>
-              )}
-            </div>
-          ))}
-
-          <button onClick={handleCheckQuiz} style={{ marginTop: 8 }}>
-            Check answers
-          </button>
-
-          {quizResult && (
-            <p style={{ marginTop: 8, fontWeight: "bold" }}>{quizResult}</p>
+          {isCompleted ? (
+            <span className="status-pill success">Completed ✓</span>
+          ) : (
+            <button className="button" onClick={handleComplete}>
+              Mark as completed
+            </button>
           )}
         </div>
-      )}
+
+        <p className="lesson-content">{lesson.content}</p>
+
+        {quizScore !== null && (
+          <div className="lesson-score-box">
+            <strong>Quiz score:</strong> {quizScore}%
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <h2>🎥 Video</h2>
+        {lesson.video_url ? (
+          <div className="video-frame-wrap">
+            <iframe
+              className="video-frame"
+              src={lesson.video_url}
+              allowFullScreen
+              title={lesson.title}
+            />
+          </div>
+        ) : (
+          <p>No video for this lesson.</p>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="section-head">
+          <h2>🤖 AI Summary</h2>
+          <button className="button" onClick={handleGenerateSummary} disabled={summaryLoading}>
+            {summaryLoading ? "Generating..." : "Generate Summary"}
+          </button>
+        </div>
+
+        {summaryError && <p className="error-text">{summaryError}</p>}
+
+        {summary ? (
+          <div className="summary-box">{summary}</div>
+        ) : (
+          <p>Click the button to generate an AI-based summary of this lesson.</p>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="section-head">
+          <h2>🧠 AI Quiz</h2>
+          <button className="button" onClick={handleGenerateQuiz} disabled={quizLoading}>
+            {quizLoading ? "Generating..." : "Generate AI Quiz"}
+          </button>
+        </div>
+
+        {quizError && <p className="error-text">{quizError}</p>}
+
+        {quiz && quiz.length > 0 && (
+          <div className="quiz-wrap">
+            {quiz.map((q) => (
+              <div key={q.id} className="quiz-question-card">
+                <p className="question-title">
+                  <span className="question-number">Q{q.id}</span>
+                  {q.question}
+                </p>
+
+                <ul className="option-list">
+                  {q.options.map((opt, idx) => {
+                    const selected = answers[q.id] === idx;
+                    const isCorrect = q.answer_index === idx;
+
+                    return (
+                      <li key={idx}>
+                        <label className="option-item">
+                          <input
+                            type="radio"
+                            name={`q-${q.id}`}
+                            checked={selected || false}
+                            onChange={() => handleSelectOption(q.id, idx)}
+                          />
+                          <span>{opt}</span>
+                        </label>
+
+                        {quizResult && selected && isCorrect && (
+                          <span className="inline-feedback success-text">✓ Correct</span>
+                        )}
+                        {quizResult && selected && !isCorrect && (
+                          <span className="inline-feedback error-text">✗ Incorrect</span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                {quizResult && (
+                  <p className="explanation-text">
+                    <strong>Explanation:</strong> {q.explanation}
+                  </p>
+                )}
+              </div>
+            ))}
+
+            <div className="action-row">
+              <button className="button" onClick={handleCheckQuiz}>
+                Check answers
+              </button>
+            </div>
+
+            {quizResult && <p className="result-text">{quizResult}</p>}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

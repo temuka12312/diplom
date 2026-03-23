@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Home from "../pages/Home";
 import Login from "../pages/Login";
@@ -6,29 +6,45 @@ import Register from "../pages/Register";
 import Courses from "../pages/Courses";
 import CourseDetail from "../pages/CourseDetail";
 import LessonDetail from "../pages/LessonDetail";
-import Navbar from "../components/Navbar";
-import ProtectedRoute from "./ProtectedRoute";
 import ProgressSummaryPage from "../pages/ProgressSummary";
 import PlacementTest from "../pages/PlacementTest";
 import LevelUpTest from "../pages/LevelUpTest";
 
+import ChatWidget from "../components/ChatWidget";
+import DashboardLayout from "../components/DashboardLayout";
+import AuthLayout from "../components/AuthLayout";
+import ProtectedRoute from "./ProtectedRoute";
+
 function Layout() {
-  const location = useLocation();
-
-  const hideNavbar =
-    location.pathname.startsWith("/courses/") &&
-    location.pathname.includes("/lessons/");
-
   return (
     <>
-      {!hideNavbar && <Navbar />}
-
       <Routes>
+        {/* AUTH */}
+        <Route
+          path="/login"
+          element={
+            <AuthLayout>
+              <Login />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <AuthLayout>
+              <Register />
+            </AuthLayout>
+          }
+        />
+
+        {/* DASHBOARD */}
         <Route
           path="/"
           element={
             <ProtectedRoute>
-              <Home />
+              <DashboardLayout>
+                <Home />
+              </DashboardLayout>
             </ProtectedRoute>
           }
         />
@@ -36,7 +52,9 @@ function Layout() {
           path="/courses"
           element={
             <ProtectedRoute>
-              <Courses />
+              <DashboardLayout>
+                <Courses />
+              </DashboardLayout>
             </ProtectedRoute>
           }
         />
@@ -44,7 +62,9 @@ function Layout() {
           path="/courses/:id"
           element={
             <ProtectedRoute>
-              <CourseDetail />
+              <DashboardLayout>
+                <CourseDetail />
+              </DashboardLayout>
             </ProtectedRoute>
           }
         />
@@ -52,7 +72,9 @@ function Layout() {
           path="/courses/:courseId/lessons/:lessonId"
           element={
             <ProtectedRoute>
-              <LessonDetail />
+              <DashboardLayout>
+                <LessonDetail />
+              </DashboardLayout>
             </ProtectedRoute>
           }
         />
@@ -60,7 +82,9 @@ function Layout() {
           path="/progress"
           element={
             <ProtectedRoute>
-              <ProgressSummaryPage />
+              <DashboardLayout>
+                <ProgressSummaryPage />
+              </DashboardLayout>
             </ProtectedRoute>
           }
         />
@@ -68,7 +92,9 @@ function Layout() {
           path="/placement-test"
           element={
             <ProtectedRoute>
-              <PlacementTest />
+              <DashboardLayout>
+                <PlacementTest />
+              </DashboardLayout>
             </ProtectedRoute>
           }
         />
@@ -76,14 +102,15 @@ function Layout() {
           path="/level-up-test"
           element={
             <ProtectedRoute>
-              <LevelUpTest />
+              <DashboardLayout>
+                <LevelUpTest />
+              </DashboardLayout>
             </ProtectedRoute>
           }
         />
-
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
       </Routes>
+
+      <ChatWidget />
     </>
   );
 }

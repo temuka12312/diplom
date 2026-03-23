@@ -1,0 +1,19 @@
+.course-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.course-description.expanded {
+  -webkit-line-clamp: unset;
+}
+
+.show-more {
+  background: none;
+  border: none;
+  color: #4f46e5;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 5px;
+}

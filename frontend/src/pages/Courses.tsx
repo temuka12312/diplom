@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getCourses, getMyLevelCourses } from "../api/courses";
 import { meApi } from "../api/auth";
 import type { Course } from "../api/courses";
+import "../style/courses.css";
 
 type UserLevel = "beginner" | "intermediate" | "advanced";
 
@@ -16,6 +17,7 @@ export default function Courses() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [error, setError] = useState("");
   const [mode, setMode] = useState<"my" | "all">("my");
+  const [expanded, setExpanded] = useState<number | null>(null);
   const [userLevel, setUserLevel] = useState<UserLevel>("beginner");
 
   useEffect(() => {
@@ -41,71 +43,63 @@ export default function Courses() {
     return levelRank[cLevel] > levelRank[userLevel];
   };
 
-  const getLevelBadgeStyle = (level: string) => {
-    if (level === "beginner") {
-      return {
-        background: "#e8f5e9",
-        color: "#2e7d32",
-      };
-    }
-    if (level === "intermediate") {
-      return {
-        background: "#fff8e1",
-        color: "#ef6c00",
-      };
-    }
-    return {
-      background: "#ffebee",
-      color: "#c62828",
-    };
+  const getLevelClass = (level: string) => {
+    if (level === "beginner") return "pill-beginner";
+    if (level === "intermediate") return "pill-intermediate";
+    return "pill-advanced";
   };
 
   return (
-    <div>
-      <h1>Courses</h1>
-
-      <p style={{ marginBottom: 12 }}>
-        <strong>Your level:</strong> {userLevel}
-      </p>
-
-      <div style={{ marginBottom: 20 }}>
-        <button onClick={() => setMode("my")} style={{ marginRight: 8 }}>
-          My Level
-        </button>
-
-        <button onClick={() => setMode("all")}>All Courses</button>
+    <div className="container page-shell">
+      <div className="page-header">
+        <span className="page-kicker">Learning Paths</span>
+        <h1 className="page-title">Courses</h1>
+        <p className="page-subtitle">
+          Unlock courses based on your current level and progress.
+        </p>
       </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      <div className="card courses-topbar">
+        <div>
+          <p className="mini-label">Your level</p>
+          <span className={`level-pill ${getLevelClass(userLevel)}`}>
+            {userLevel}
+          </span>
+        </div>
+
+        <div className="mode-switch">
+          <button
+            className={`button ${mode === "my" ? "" : "button-muted"}`}
+            onClick={() => setMode("my")}
+          >
+            My Level
+          </button>
+
+          <button
+            className={`button ${mode === "all" ? "" : "button-muted"}`}
+            onClick={() => setMode("all")}
+          >
+            All Courses
+          </button>
+        </div>
+      </div>
+
+      {error && <p className="error-text">{error}</p>}
 
       {courses.length === 0 ? (
         <p>No courses found.</p>
       ) : (
-        <div style={{ display: "grid", gap: 16 }}>
+        <div className="courses-grid">
           {courses.map((course) => {
             const locked = isLocked(course.level);
 
             return (
               <div
                 key={course.id}
-                style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 12,
-                  padding: 16,
-                  background: locked ? "#fafafa" : "#fff",
-                  opacity: locked ? 0.75 : 1,
-                }}
+                className={`card course-card ${locked ? "course-card-locked" : ""}`}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    marginBottom: 10,
-                  }}
-                >
-                  <h2 style={{ margin: 0 }}>
+                <div className="course-card-head">
+                  <h2 className="course-title">
                     {locked ? (
                       <span>{course.title}</span>
                     ) : (
@@ -113,34 +107,36 @@ export default function Courses() {
                     )}
                   </h2>
 
-                  <span
-                    style={{
-                      ...getLevelBadgeStyle(course.level),
-                      padding: "4px 10px",
-                      borderRadius: 999,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      textTransform: "capitalize",
-                    }}
-                  >
+                  <span className={`level-pill ${getLevelClass(course.level)}`}>
                     {course.level}
                   </span>
                 </div>
 
-                <p style={{ marginBottom: 12 }}>{course.description}</p>
+                <p className={`course-description ${expanded === course.id ? "expanded" : ""}`}>
+                  {course.description}
+                </p>
+
+                <button
+                  className="show-more"
+                  onClick={() =>
+                    setExpanded(expanded === course.id ? null : course.id)
+                  }
+                >
+                  {expanded === course.id ? "show less" : "..."}
+                </button>
 
                 {locked ? (
-                  <div>
-                    <p style={{ color: "#b45309", marginBottom: 8 }}>
+                  <div className="locked-box">
+                    <p className="warning-text">
                       🔒 Locked — This course requires a higher level.
                     </p>
-                    <button disabled style={{ cursor: "not-allowed" }}>
+                    <button className="button button-muted" disabled>
                       Locked
                     </button>
                   </div>
                 ) : (
                   <Link to={`/courses/${course.id}`}>
-                    <button>Open Course</button>
+                    <button className="button">Open Course</button>
                   </Link>
                 )}
               </div>

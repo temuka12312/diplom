@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getLevelUpTest, type QuizQuestion } from "../api/ai";
-import { saveLevel } from "../api/auth";
+import {
+  getLevelUpTest,
+  submitLevelUpTest,
+  type QuizQuestion,
+} from "../api/ai";
 
 export default function LevelUpTest() {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -19,8 +21,6 @@ export default function LevelUpTest() {
     total: number;
     percent: number;
   } | null>(null);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     getLevelUpTest()
@@ -43,39 +43,27 @@ export default function LevelUpTest() {
   const handleSubmit = async () => {
     if (!questions.length) return;
 
-    let correct = 0;
-    questions.forEach((q) => {
-      if (answers[q.id] === q.answer_index) {
-        correct += 1;
-      }
+    const orderedAnswers = questions.map((q) => {
+      const value = answers[q.id];
+      return value === null || value === undefined ? -1 : value;
     });
 
-    const percent = Math.round((correct / questions.length) * 100);
-    const didPass = percent >= 70;
+    try {
+      const res = await submitLevelUpTest(orderedAnswers);
 
-    setPassed(didPass);
-    setScoreData({
-      correct,
-      total: questions.length,
-      percent,
-    });
+      setPassed(res.passed);
+      setScoreData({
+        correct: res.correct,
+        total: res.total,
+        percent: res.percent,
+      });
 
-    if (didPass) {
-      try {
-        await saveLevel(nextLevel);
-        setResult(
-          `Тэнцлээ! ${correct}/${questions.length} (${percent}%). Таны шинэ түвшин: ${nextLevel}`
-        );
-      } catch (e) {
-        setResult("Level хадгалах үед алдаа гарлаа.");
-      }
-    } else {
-      setResult(
-        `Тэнцээгүй. ${correct}/${questions.length} (${percent}%). Дахин оролдоно уу.`
-      );
+      setResult(res.message);
+      setShowModal(true);
+    } catch (e) {
+      console.error("Level-up submit error", e);
+      setError("Level-up test submit үед алдаа гарлаа.");
     }
-
-    setShowModal(true);
   };
 
   const handleCloseModal = () => {
@@ -83,45 +71,71 @@ export default function LevelUpTest() {
     window.location.replace("/progress");
   };
 
-  if (loading) return <p>Loading level-up test...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) {
+    return (
+      <div className="container page-shell">
+        <p className="loading-text">Level-up test ачаалж байна...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container page-shell">
+        <p className="error-text">{error}</p>
+      </div>
+    );
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="container page-shell">
+        <p>Одоогоор level-up test-ийн асуулт алга байна.</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", position: "relative" }}>
-      <h1>Level Up Test</h1>
-      <p>
-        Current level: <strong>{currentLevel}</strong>
-      </p>
-      <p>
-        Target level: <strong>{nextLevel}</strong>
-      </p>
+    <div className="container page-shell">
+      <div className="page-header">
+        <span className="page-kicker">AI Level Progress</span>
+        <h1 className="page-title">Level Up Test</h1>
+        <p className="page-subtitle">
+          Одоогийн түвшнээсээ дараагийн түвшин рүү ахих шалгалт өгнө.
+        </p>
+      </div>
+
+      <div className="card level-info-card">
+        <div className="level-info-grid">
+          <div>
+            <p className="mini-label">Current level</p>
+            <span className="level-pill pill-beginner">{currentLevel}</span>
+          </div>
+          <div>
+            <p className="mini-label">Target level</p>
+            <span className="level-pill level-pill-target">{nextLevel}</span>
+          </div>
+        </div>
+      </div>
 
       {questions.map((q) => (
-        <div
-          key={q.id}
-          style={{
-            border: "1px solid #eee",
-            padding: 12,
-            borderRadius: 6,
-            marginBottom: 12,
-          }}
-        >
-          <p>
-            <strong>Q{q.id}:</strong> {q.question}
+        <div key={q.id} className="card test-card">
+          <p className="question-title">
+            <span className="question-number">Q{q.id}</span>
+            {q.question}
           </p>
 
-          <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+          <ul className="option-list">
             {q.options.map((opt, idx) => (
-              <li key={idx} style={{ marginBottom: 4 }}>
-                <label>
+              <li key={idx}>
+                <label className="option-item">
                   <input
                     type="radio"
                     name={`q-${q.id}`}
                     checked={answers[q.id] === idx || false}
                     onChange={() => handleSelect(q.id, idx)}
-                    style={{ marginRight: 6 }}
                   />
-                  {opt}
+                  <span>{opt}</span>
                 </label>
               </li>
             ))}
@@ -129,39 +143,21 @@ export default function LevelUpTest() {
         </div>
       ))}
 
-      <button onClick={handleSubmit}>Submit Level-Up Test</button>
+      <div className="action-row center">
+        <button className="button" onClick={handleSubmit}>
+          Submit Level-Up Test
+        </button>
+      </div>
 
-      {result && (
-        <p style={{ marginTop: 12, fontWeight: "bold" }}>
-          {result}
-        </p>
-      )}
+      {result && <p className="result-text">{result}</p>}
 
       {showModal && scoreData && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0, 0, 0, 0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              borderRadius: 8,
-              padding: 24,
-              maxWidth: 420,
-              width: "100%",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-            }}
-          >
-            <h2 style={{ marginTop: 0 }}>Level-Up Test Result</h2>
+        <div className="modal-overlay">
+          <div className="modal modal-lg">
+            <div className="result-icon">{passed ? "🎉" : "📘"}</div>
+            <h2>Level-Up Test Result</h2>
 
-            <p>
+            <p className="result-stat">
               Зөв хариулт:{" "}
               <strong>
                 {scoreData.correct}/{scoreData.total}
@@ -170,29 +166,16 @@ export default function LevelUpTest() {
             </p>
 
             {passed ? (
-              <p>
-                🎉 Congratulations! Your new level is{" "}
-                <strong>{nextLevel}</strong>.
+              <p className="success-text">
+                Congratulations! Your new level is <strong>{nextLevel}</strong>.
               </p>
             ) : (
-              <p>
-                ❌ You did not pass this time. Please review your lessons and try
-                again.
+              <p className="warning-text">
+                Та энэ удаа тэнцсэнгүй. Хичээлээ давтаад дахин оролдоно уу.
               </p>
             )}
 
-            <button
-              onClick={handleCloseModal}
-              style={{
-                marginTop: 16,
-                padding: "8px 16px",
-                borderRadius: 6,
-                border: "none",
-                background: "#4CAF50",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
+            <button className="button" onClick={handleCloseModal}>
               OK, Back to Progress
             </button>
           </div>

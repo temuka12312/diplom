@@ -36,31 +36,26 @@ export default function CourseDetail() {
       .catch(() => setError("Failed to load course"));
   }, [id]);
 
-  const getLevelBadgeStyle = (level: string) => {
-    if (level === "beginner") {
-      return {
-        background: "#e8f5e9",
-        color: "#2e7d32",
-      };
-    }
-    if (level === "intermediate") {
-      return {
-        background: "#fff8e1",
-        color: "#ef6c00",
-      };
-    }
-    return {
-      background: "#ffebee",
-      color: "#c62828",
-    };
+  const getLevelClass = (level: string) => {
+    if (level === "beginner") return "pill-beginner";
+    if (level === "intermediate") return "pill-intermediate";
+    return "pill-advanced";
   };
 
   if (error) {
-    return <p style={{ color: "red" }}>{error}</p>;
+    return (
+      <div className="container page-shell">
+        <p className="error-text">{error}</p>
+      </div>
+    );
   }
 
   if (!course) {
-    return <p>Loading...</p>;
+    return (
+      <div className="container page-shell">
+        <p className="loading-text">Loading course...</p>
+      </div>
+    );
   }
 
   const locked =
@@ -68,43 +63,26 @@ export default function CourseDetail() {
 
   if (locked) {
     return (
-      <div>
-        <Link to="/courses">← Back to courses</Link>
+      <div className="container page-shell">
+        <div className="back-link-wrap">
+          <Link className="back-link" to="/courses">
+            ← Back to courses
+          </Link>
+        </div>
 
-        <div
-          style={{
-            marginTop: 20,
-            border: "1px solid #f5c2c7",
-            background: "#fff5f5",
-            borderRadius: 12,
-            padding: 20,
-          }}
-        >
-          <h1 style={{ marginTop: 0 }}>{course.title}</h1>
+        <div className="card locked-course-card">
+          <span className="page-kicker">Locked Course</span>
+          <h1 className="page-title">{course.title}</h1>
+          <p className="course-description">{course.description}</p>
 
-          <p style={{ marginBottom: 12 }}>{course.description}</p>
-
-          <span
-            style={{
-              ...getLevelBadgeStyle(course.level),
-              padding: "4px 10px",
-              borderRadius: 999,
-              fontSize: 12,
-              fontWeight: 700,
-              textTransform: "capitalize",
-              display: "inline-block",
-              marginBottom: 16,
-            }}
-          >
+          <span className={`level-pill ${getLevelClass(course.level)}`}>
             {course.level}
           </span>
 
-          <p style={{ color: "#b91c1c", fontWeight: 600 }}>
+          <p className="warning-text" style={{ marginTop: 16 }}>
             🔒 This course is locked for your current level.
           </p>
-          <p>
-            Your current level: <strong>{userLevel}</strong>
-          </p>
+          <p>Your current level: <strong>{userLevel}</strong></p>
           <p>
             Reach <strong>{course.level}</strong> level to access this course.
           </p>
@@ -114,68 +92,58 @@ export default function CourseDetail() {
   }
 
   return (
-    <div>
-      <Link to="/courses">← Back to courses</Link>
+    <div className="container page-shell">
+      <div className="back-link-wrap">
+        <Link className="back-link" to="/courses">
+          ← Back to courses
+        </Link>
+      </div>
 
-      <h1>{course.title}</h1>
-      <p>{course.description}</p>
-      <p>
-        <strong>Level:</strong>{" "}
-        <span
-          style={{
-            ...getLevelBadgeStyle(course.level),
-            padding: "4px 10px",
-            borderRadius: 999,
-            fontSize: 12,
-            fontWeight: 700,
-            textTransform: "capitalize",
-          }}
-        >
+      <div className="card">
+        <span className="page-kicker">Course Detail</span>
+        <h1 className="page-title">{course.title}</h1>
+        <p className="course-description">{course.description}</p>
+        <span className={`level-pill ${getLevelClass(course.level)}`}>
           {course.level}
         </span>
-      </p>
+      </div>
 
-      <h2>Lessons</h2>
-      {course.lessons.length === 0 ? (
-        <p>No lessons yet.</p>
-      ) : (
-        <ol>
-          {course.lessons.map((lesson: Lesson) => (
-            <li key={lesson.id} style={{ marginBottom: 10 }}>
-              <Link to={`/courses/${course.id}/lessons/${lesson.id}`}>
-                <strong>{lesson.title}</strong>
-              </Link>
+      <div className="card">
+        <h2>Lessons</h2>
+        {course.lessons.length === 0 ? (
+          <p>No lessons yet.</p>
+        ) : (
+          <div className="lesson-list">
+            {course.lessons.map((lesson: Lesson) => (
+              <div key={lesson.id} className="lesson-list-item">
+                <Link to={`/courses/${course.id}/lessons/${lesson.id}`}>
+                  <strong>{lesson.title}</strong>
+                </Link>
 
-              {lesson.video_url && (
-                <>
-                  {" – "}
-                  <a href={lesson.video_url} target="_blank" rel="noreferrer">
-                    Video
-                  </a>
-                </>
-              )}
+                <div className="lesson-links">
+                  {lesson.video_url && (
+                    <a href={lesson.video_url} target="_blank" rel="noreferrer">
+                      Video
+                    </a>
+                  )}
 
-              {lesson.file && (
-                <>
-                  {" – "}
-                  <a href={lesson.file} target="_blank" rel="noreferrer">
-                    PDF
-                  </a>
-                </>
-              )}
+                  {lesson.file && (
+                    <a href={lesson.file} target="_blank" rel="noreferrer">
+                      PDF
+                    </a>
+                  )}
 
-              {lesson.attachment && (
-                <>
-                  {" – "}
-                  <a href={lesson.attachment} target="_blank" rel="noreferrer">
-                    Attachment
-                  </a>
-                </>
-              )}
-            </li>
-          ))}
-        </ol>
-      )}
+                  {lesson.attachment && (
+                    <a href={lesson.attachment} target="_blank" rel="noreferrer">
+                      Attachment
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

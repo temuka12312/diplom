@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { getPlacementTest, type PlacementQuestion } from "../api/ai";
-import { saveLevel } from "../api/auth";
+import {
+  getPlacementTest,
+  submitPlacementTest,
+  type PlacementQuestion,
+} from "../api/ai";
 
 export default function PlacementTest() {
   const [questions, setQuestions] = useState<PlacementQuestion[]>([]);
@@ -31,34 +34,26 @@ export default function PlacementTest() {
   const handleSubmit = async () => {
     if (questions.length === 0) return;
 
-    let correct = 0;
-    questions.forEach((q) => {
-      if (answers[q.id] === q.answer_index) {
-        correct += 1;
-      }
+    const orderedAnswers = questions.map((q) => {
+      const value = answers[q.id];
+      return value === null || value === undefined ? -1 : value;
     });
 
-    const percent = Math.round((correct / questions.length) * 100);
-
-    let level = "beginner";
-    if (percent >= 70) level = "advanced";
-    else if (percent >= 40) level = "intermediate";
-
-    const message = `Зөв хариулт: ${correct}/${questions.length} (${percent}%).\nТаны түвшин: ${level}.`;
-
     try {
-      await saveLevel(level);
+      const res = await submitPlacementTest(orderedAnswers);
+
+      const message = `Зөв хариулт: ${res.correct}/${res.total} (${res.percent}%).\nТаны түвшин: ${res.level}.`;
 
       setResult(message);
       setScoreData({
-        correct,
-        total: questions.length,
-        percent,
-        level,
+        correct: res.correct,
+        total: res.total,
+        percent: res.percent,
+        level: res.level,
       });
       setShowModal(true);
     } catch (e) {
-      console.error("Failed to save level", e);
+      console.error("Placement test submit error", e);
       setError("Түвшин хадгалах үед алдаа гарлаа.");
     }
   };
@@ -68,43 +63,58 @@ export default function PlacementTest() {
     window.location.replace("/");
   };
 
-  if (loading) return <p>Placement test ачаалж байна...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (loading) {
+    return (
+      <div className="container page-shell">
+        <p className="loading-text">Placement test ачаалж байна...</p>
+      </div>
+    );
+  }
 
-  if (!loading && !error && questions.length === 0) {
-    return <p>Одоогоор placement test-ийн асуулт алга байна.</p>;
+  if (error) {
+    return (
+      <div className="container page-shell">
+        <p className="error-text">{error}</p>
+      </div>
+    );
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="container page-shell">
+        <p>Одоогоор placement test-ийн асуулт алга байна.</p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", position: "relative" }}>
-      <h1>Түвшин тогтоох шалгалт</h1>
-      <p>Доорх асуултуудад хариулаад өөрийн түвшинг тогтоолгоно уу.</p>
+    <div className="container page-shell">
+      <div className="page-header">
+        <span className="page-kicker">AI Placement</span>
+        <h1 className="page-title">Түвшин тогтоох шалгалт</h1>
+        <p className="page-subtitle">
+          Доорх асуултуудад хариулаад өөрийн түвшинг тогтоолгоно уу.
+        </p>
+      </div>
 
       {questions.map((q) => (
-        <div
-          key={q.id}
-          style={{
-            border: "1px solid #eee",
-            padding: 12,
-            borderRadius: 4,
-            marginBottom: 12,
-          }}
-        >
-          <p>
-            <strong>Q{q.id}:</strong> {q.question}
+        <div key={q.id} className="card test-card">
+          <p className="question-title">
+            <span className="question-number">Q{q.id}</span>
+            {q.question}
           </p>
-          <ul style={{ listStyle: "none", paddingLeft: 0 }}>
+
+          <ul className="option-list">
             {q.options.map((opt, idx) => (
-              <li key={idx} style={{ marginBottom: 4 }}>
-                <label style={{ cursor: "pointer" }}>
+              <li key={idx}>
+                <label className="option-item">
                   <input
                     type="radio"
                     name={`q-${q.id}`}
                     checked={answers[q.id] === idx || false}
                     onChange={() => handleSelect(q.id, idx)}
-                    style={{ marginRight: 6 }}
                   />
-                  {opt}
+                  <span>{opt}</span>
                 </label>
               </li>
             ))}
@@ -112,65 +122,37 @@ export default function PlacementTest() {
         </div>
       ))}
 
-      <button onClick={handleSubmit} style={{ marginTop: 8 }}>
-        Шалгалтаа явуулах
-      </button>
+      <div className="action-row center">
+        <button className="button" onClick={handleSubmit}>
+          Шалгалтаа явуулах
+        </button>
+      </div>
 
-      {result && (
-        <p style={{ marginTop: 12, fontWeight: "bold", whiteSpace: "pre-line" }}>
-          {result}
-        </p>
-      )}
+      {result && <p className="result-text">{result}</p>}
 
       {showModal && scoreData && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0, 0, 0, 0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-              borderRadius: 8,
-              padding: 24,
-              maxWidth: 400,
-              width: "100%",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-            }}
-          >
-            <h2 style={{ marginTop: 0 }}>Шалгалтын үр дүн</h2>
-            <p>
+        <div className="modal-overlay">
+          <div className="modal modal-lg">
+            <div className="result-icon">🎯</div>
+            <h2>Шалгалтын үр дүн</h2>
+
+            <p className="result-stat">
               Зөв хариулт:{" "}
               <strong>
                 {scoreData.correct}/{scoreData.total}
               </strong>{" "}
               ({scoreData.percent}%)
             </p>
-            <p>
-              Таны түвшин: <strong>{scoreData.level}</strong>
+
+            <p className="result-level">
+              Таны түвшин: <span className="level-pill">{scoreData.level}</span>
             </p>
-            <p style={{ fontSize: 13, color: "#555" }}>
+
+            <p className="modal-note">
               Энэ түвшингээр тань тохирсон хичээлүүдийг санал болгоно.
             </p>
 
-            <button
-              onClick={handleCloseModal}
-              style={{
-                marginTop: 16,
-                padding: "8px 16px",
-                borderRadius: 6,
-                border: "none",
-                background: "#4CAF50",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
+            <button className="button" onClick={handleCloseModal}>
               OK, эхлэл рүү очих
             </button>
           </div>

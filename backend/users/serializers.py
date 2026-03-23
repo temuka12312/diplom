@@ -12,8 +12,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "password",
-            "role",
-            "skill_level",
         )
 
     def create(self, validated_data):
@@ -21,8 +19,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             username=validated_data["username"],
             email=validated_data.get("email"),
             password=validated_data["password"],
-            role=validated_data.get("role", "student"),
-            skill_level=validated_data.get("skill_level", "beginner"),
+            role="student",
+            skill_level=None,
         )
         return user
 
@@ -39,4 +37,6 @@ class UserSerializer(serializers.ModelSerializer):
             "total_score",
             "completed_lessons",
             "has_placement_test",
+            "is_staff",
+            "is_superuser",
         )
