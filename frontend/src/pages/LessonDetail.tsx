@@ -9,6 +9,13 @@ import {
   getLessonQuiz,
   type LessonQuizQuestion,
 } from "../api/ai";
+import {
+  getCommunityPosts,
+  createCommunityPost,
+  createCommunityComment,
+  type CommunityPost,
+} from "../api/community";
+import "../style/lesson-detail.css";
 
 export default function LessonDetail() {
   const { courseId, lessonId } = useParams<{
@@ -34,6 +41,30 @@ export default function LessonDetail() {
 
   const [quizScore, setQuizScore] = useState<number | null>(null);
 
+  const [discussionPosts, setDiscussionPosts] = useState<CommunityPost[]>([]);
+  const [discussionLoading, setDiscussionLoading] = useState(false);
+  const [discussionError, setDiscussionError] = useState("");
+  const [discussionText, setDiscussionText] = useState("");
+  const [discussionComments, setDiscussionComments] = useState<
+    Record<number, string>
+  >({});
+
+  const loadDiscussion = async () => {
+    if (!lessonId) return;
+
+    try {
+      setDiscussionLoading(true);
+      setDiscussionError("");
+      const data = await getCommunityPosts(lessonId);
+      setDiscussionPosts(data);
+    } catch (err) {
+      console.error("Discussion load error >>>", err);
+      setDiscussionError("Failed to load discussion");
+    } finally {
+      setDiscussionLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!lessonId) return;
 
@@ -54,6 +85,8 @@ export default function LessonDetail() {
       })
       .catch(() => setError("Failed to load lesson"))
       .finally(() => setLoading(false));
+
+    loadDiscussion();
   }, [lessonId]);
 
   const handleComplete = async () => {
@@ -138,6 +171,53 @@ export default function LessonDetail() {
     }
   };
 
+  const handleCreateDiscussionPost = async () => {
+    if (!lessonId || !discussionText.trim()) return;
+
+    try {
+      await createCommunityPost({
+        title: "",
+        content: discussionText.trim(),
+        lesson: Number(lessonId),
+      });
+      setDiscussionText("");
+      loadDiscussion();
+    } catch (err: any) {
+      console.error("Create discussion post error >>>", err);
+      const msg =
+        err?.response?.data?.moderation_reason ||
+        err?.response?.data?.detail ||
+        "Failed to create discussion post";
+      setDiscussionError(msg);
+    }
+  };
+
+  const handleCreateDiscussionComment = async (postId: number) => {
+    const value = discussionComments[postId]?.trim();
+    if (!value) return;
+
+    try {
+      await createCommunityComment({
+        post: postId,
+        content: value,
+      });
+
+      setDiscussionComments((prev) => ({
+        ...prev,
+        [postId]: "",
+      }));
+
+      loadDiscussion();
+    } catch (err: any) {
+      console.error("Create discussion comment error >>>", err);
+      const msg =
+        err?.response?.data?.moderation_reason ||
+        err?.response?.data?.detail ||
+        "Failed to add comment";
+      setDiscussionError(msg);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container page-shell">
@@ -163,7 +243,7 @@ export default function LessonDetail() {
   }
 
   return (
-    <div className="container page-shell">
+    <div className="container page-shell lesson-page">
       <div className="back-link-wrap">
         <Link className="back-link" to={`/courses/${courseId}`}>
           ← Back to course
@@ -214,7 +294,11 @@ export default function LessonDetail() {
       <div className="card">
         <div className="section-head">
           <h2>🤖 AI Summary</h2>
-          <button className="button" onClick={handleGenerateSummary} disabled={summaryLoading}>
+          <button
+            className="button"
+            onClick={handleGenerateSummary}
+            disabled={summaryLoading}
+          >
             {summaryLoading ? "Generating..." : "Generate Summary"}
           </button>
         </div>
@@ -231,7 +315,11 @@ export default function LessonDetail() {
       <div className="card">
         <div className="section-head">
           <h2>🧠 AI Quiz</h2>
-          <button className="button" onClick={handleGenerateQuiz} disabled={quizLoading}>
+          <button
+            className="button"
+            onClick={handleGenerateQuiz}
+            disabled={quizLoading}
+          >
             {quizLoading ? "Generating..." : "Generate AI Quiz"}
           </button>
         </div>
@@ -265,10 +353,14 @@ export default function LessonDetail() {
                         </label>
 
                         {quizResult && selected && isCorrect && (
-                          <span className="inline-feedback success-text">✓ Correct</span>
+                          <span className="inline-feedback success-text">
+                            ✓ Correct
+                          </span>
                         )}
                         {quizResult && selected && !isCorrect && (
-                          <span className="inline-feedback error-text">✗ Incorrect</span>
+                          <span className="inline-feedback error-text">
+                            ✗ Incorrect
+                          </span>
                         )}
                       </li>
                     );
@@ -290,6 +382,87 @@ export default function LessonDetail() {
             </div>
 
             {quizResult && <p className="result-text">{quizResult}</p>}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="section-head">
+          <h2>💬 Lesson Discussion</h2>
+        </div>
+
+        {discussionError && <p className="error-text">{discussionError}</p>}
+
+        <div className="discussion-create-box">
+          <textarea
+            className="discussion-textarea"
+            rows={4}
+            placeholder="Энэ хичээлтэй холбоотой асуулт, санал, тайлбараа бичнэ үү..."
+            value={discussionText}
+            onChange={(e) => setDiscussionText(e.target.value)}
+          />
+          <div>
+            <button className="button" onClick={handleCreateDiscussionPost}>
+              Post Discussion
+            </button>
+          </div>
+        </div>
+
+        {discussionLoading ? (
+          <p>Loading discussion...</p>
+        ) : discussionPosts.length === 0 ? (
+          <p>No discussion yet for this lesson.</p>
+        ) : (
+          <div className="discussion-list">
+            {discussionPosts.map((post) => (
+              <div key={post.id} className="discussion-post-card">
+                <div className="discussion-post-head">
+                  <p className="discussion-author">{post.author_username}</p>
+                  <p className="discussion-date">
+                    {new Date(post.created_at).toLocaleString()}
+                  </p>
+                </div>
+
+                <p className="discussion-post-content">{post.content}</p>
+
+                <div className="discussion-comments">
+                  {post.comments.length === 0 ? (
+                    <p className="discussion-empty">No comments yet.</p>
+                  ) : (
+                    post.comments.map((comment) => (
+                      <div key={comment.id} className="discussion-comment-card">
+                        <p className="discussion-comment-author">
+                          {comment.author_username}
+                        </p>
+                        <p className="discussion-comment-content">
+                          {comment.content}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="discussion-comment-form">
+                  <input
+                    className="discussion-comment-input"
+                    placeholder="Write a comment..."
+                    value={discussionComments[post.id] || ""}
+                    onChange={(e) =>
+                      setDiscussionComments((prev) => ({
+                        ...prev,
+                        [post.id]: e.target.value,
+                      }))
+                    }
+                  />
+                  <button
+                    className="button"
+                    onClick={() => handleCreateDiscussionComment(post.id)}
+                  >
+                    Comment
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

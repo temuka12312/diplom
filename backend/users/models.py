@@ -2,6 +2,14 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+SKILL_LEVEL_CHOICES = (
+    ("beginner", "Анхан"),
+    ("elementary", "Суурь"),
+    ("intermediate", "Дунд"),
+    ("advanced", "Ахисан"),
+)
+
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ("student", "Student"),
@@ -13,14 +21,10 @@ class User(AbstractUser):
 
     skill_level = models.CharField(
         max_length=20,
-        choices=(
-            ("beginner", "Beginner"),
-            ("intermediate", "Intermediate"),
-            ("advanced", "Advanced"),
-        ),
+        choices=SKILL_LEVEL_CHOICES,
         default="beginner",
         blank=True,
-        null=True,          # ← түвшин хараахан тогтоогдоогүй байж болно
+        null=True,
     )
 
     has_placement_test = models.BooleanField(default=False)
@@ -28,16 +32,20 @@ class User(AbstractUser):
     total_score = models.FloatField(default=0)
     completed_lessons = models.IntegerField(default=0)
 
+    warning_count = models.IntegerField(default=0)
+
+    def add_warning(self):
+        self.warning_count += 1
+        self.save(update_fields=["warning_count"])
+
     def update_level_and_role(self):
-        """
-        total_score + completed_lessons дээр үндэслээд
-        skill_level, role хоёрыг автоматаар шинэчилнэ.
-        """
         score = self.total_score
 
         if score < 100:
             level = "beginner"
-        elif score < 300:
+        elif score < 200:
+            level = "elementary"
+        elif score < 400:
             level = "intermediate"
         else:
             level = "advanced"

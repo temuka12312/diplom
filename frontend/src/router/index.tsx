@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import LandingPage from "../pages/LandingPage";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -9,6 +10,7 @@ import LessonDetail from "../pages/LessonDetail";
 import ProgressSummaryPage from "../pages/ProgressSummary";
 import PlacementTest from "../pages/PlacementTest";
 import LevelUpTest from "../pages/LevelUpTest";
+import Community from "../pages/Community";
 
 import ChatWidget from "../components/ChatWidget";
 import DashboardLayout from "../components/DashboardLayout";
@@ -19,7 +21,8 @@ function Layout() {
   return (
     <>
       <Routes>
-        {/* AUTH */}
+        <Route path="/" element={<LandingPage />} />
+
         <Route
           path="/login"
           element={
@@ -37,9 +40,8 @@ function Layout() {
           }
         />
 
-        {/* DASHBOARD */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardLayout>
@@ -104,6 +106,16 @@ function Layout() {
             <ProtectedRoute>
               <DashboardLayout>
                 <LevelUpTest />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/community"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Community />
               </DashboardLayout>
             </ProtectedRoute>
           }

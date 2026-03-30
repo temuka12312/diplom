@@ -12,8 +12,8 @@ class LessonSerializer(serializers.ModelSerializer):
             "content",
             "order",
             "video_url",
-            "file",        # ← PDF
-            "attachment",  # ← PPT/DOCX/ZIP г.м
+            "file",        
+            "attachment",  
             "score",
         )
 

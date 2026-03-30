@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     "corsheaders",
     'rest_framework',
     'users',
+    'community',
     'courses',
+    'website',
     'progress',
     'ai_engine',
     'api',
@@ -136,6 +138,7 @@ AUTH_USER_MODEL = 'users.User'
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://192.168.1.2:5173",
 ]
 
 CORS_ALLOW_CREDENTIALS = True

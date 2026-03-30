@@ -1,13 +1,32 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { loginApi } from "../api/auth";
+import AuthMascot from "../components/AuthMascot";
+
+type MascotMode =
+  | "idle"
+  | "look-left"
+  | "look-center"
+  | "look-right"
+  | "cover-eyes";
 
 export default function Login() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [focusedField, setFocusedField] = useState<"username" | "password" | null>(null);
   const [error, setError] = useState("");
+
+  const mascotMode = useMemo<MascotMode>(() => {
+    if (focusedField === "password") return "cover-eyes";
+    if (focusedField === "username") {
+      if (username.length === 0) return "look-center";
+      if (username.length < 8) return "look-left";
+      return "look-right";
+    }
+    return "idle";
+  }, [focusedField, username]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,58 +34,59 @@ export default function Login() {
 
     try {
       const data = await loginApi(username, password);
-
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
-
-      navigate("/");
-    } catch (err) {
-      setError("Нэвтрэх нэр эсвэл нууц үг буруу байна.");
+      navigate("/dashboard");
+    } catch {
+      setError("Нэвтрэх үед алдаа гарлаа.");
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <span className="page-kicker">Welcome Back</span>
-        <h1 className="auth-title">Login</h1>
-        <p className="auth-subtitle">
-          LOTUS Learn систем рүү нэвтэрч суралцах аяллаа үргэлжлүүлээрэй.
-        </p>
+    <AuthMascot
+      mode={mascotMode}
+      title="Welcome back"
+      subtitle="Өөрийн аккаунтаар нэвтэрч сургалтаа үргэлжлүүлээрэй."
+    >
+      <div className="auth-form-shell">
+        <h2>Login</h2>
+        <p className="auth-note">Систем рүү нэвтрэх мэдээллээ оруулна уу.</p>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        {error && <div className="auth-error">{error}</div>}
+
+        <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
             <label>Username</label>
             <input
-              className="input"
-              placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              onFocus={() => setFocusedField("username")}
+              onBlur={() => setFocusedField(null)}
+              placeholder="enter your name"
             />
           </div>
 
           <div className="auth-field">
             <label>Password</label>
             <input
-              className="input"
               type="password"
-              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
+              placeholder="••••••••"
             />
           </div>
 
-          {error && <p className="error-text">{error}</p>}
-
-          <button className="button auth-button" type="submit">
+          <button className="auth-submit" type="submit">
             Login
           </button>
         </form>
 
-        <p className="auth-footer">
+        <div className="auth-switch">
           Бүртгэлгүй юу? <Link to="/register">Register</Link>
-        </p>
+        </div>
       </div>
-    </div>
+    </AuthMascot>
   );
 }

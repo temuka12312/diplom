@@ -26,6 +26,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    skill_level_display = serializers.CharField(
+        source="get_skill_level_display",
+        read_only=True,
+    )
+
     class Meta:
         model = User
         fields = (
@@ -34,9 +39,11 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "role",
             "skill_level",
+            "skill_level_display",
             "total_score",
             "completed_lessons",
             "has_placement_test",
+            "warning_count",
             "is_staff",
             "is_superuser",
         )

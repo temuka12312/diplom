@@ -1,5 +1,59 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from users.models import User
+from .models import User
 
-admin.site.register(User, UserAdmin)
+
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
+    model = User
+
+    list_display = (
+        "username",
+        "email",
+        "role",
+        "skill_level",
+        "warning_count",
+        "total_score",
+        "completed_lessons",
+        "is_staff",
+    )
+
+    list_filter = (
+        "role",
+        "skill_level",
+        "is_staff",
+        "is_superuser",
+        "is_active",
+    )
+
+    fieldsets = UserAdmin.fieldsets + (
+        (
+            "Learning Info",
+            {
+                "fields": (
+                    "role",
+                    "skill_level",
+                    "has_placement_test",
+                    "total_score",
+                    "completed_lessons",
+                    "warning_count",
+                )
+            },
+        ),
+    )
+
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (
+            "Learning Info",
+            {
+                "fields": (
+                    "role",
+                    "skill_level",
+                    "has_placement_test",
+                    "total_score",
+                    "completed_lessons",
+                    "warning_count",
+                )
+            },
+        ),
+    )

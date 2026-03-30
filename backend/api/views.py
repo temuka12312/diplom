@@ -6,5 +6,5 @@ from rest_framework.response import Response
 def test(request):
     return Response({
         "status": "ok",
-        "message": "Elearn API working"
+        "message": "api ok"
     })

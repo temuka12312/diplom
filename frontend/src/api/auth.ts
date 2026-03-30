@@ -5,7 +5,7 @@ export const loginApi = async (username: string, password: string) => {
     username,
     password,
   });
-  return res.data; 
+  return res.data;
 };
 
 export const registerApi = async (
@@ -27,16 +27,18 @@ export interface MeResponse {
   email: string;
   role: string;
   skill_level: string | null;
+  skill_level_display?: string;
   total_score: number;
   completed_lessons: number;
   has_placement_test: boolean;
+  warning_count: number;
   is_staff: boolean;
   is_superuser: boolean;
 }
 
 export const meApi = async (): Promise<MeResponse> => {
   const res = await api.get("/auth/me/");
-  return res.data; 
+  return res.data;
 };
 
 export const saveLevel = async (level: string) => {

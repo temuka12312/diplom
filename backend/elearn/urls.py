@@ -15,7 +15,9 @@ urlpatterns = [
     path("api/", include("api.urls")),
     path("api/progress/", include("progress.urls")),
     path("api/courses/", include("courses.urls")),
-    path("api/ai/", include("ai_engine.urls")),  # ← ШИНЭ
+    path("api/ai/", include("ai_engine.urls")), 
+    path("api/community/", include("community.urls")),
+    path("api/website/", include("website.urls")),
     path("", home),
 ]
 

@@ -11,17 +11,14 @@ class CourseListView(generics.ListCreateAPIView):
     def get_queryset(self):
         qs = Course.objects.all().order_by("-created_at")
 
-        # query param-аар override хийж болно
         level = self.request.query_params.get("level")
         my_level_only = self.request.query_params.get("my_level")
 
-        # /api/courses/?my_level=1  -> user.skill_level-р filter
         if my_level_only == "1":
             user_level = getattr(self.request.user, "skill_level", None)
             if user_level:
                 qs = qs.filter(level=user_level)
 
-        # /api/courses/?level=beginner  -> шууд level-р filter
         elif level in ["beginner", "intermediate", "advanced"]:
             qs = qs.filter(level=level)
 

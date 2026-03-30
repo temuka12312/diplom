@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProgressSummary, type ProgressSummary } from "../api/progress";
 
@@ -12,6 +12,29 @@ export default function Home() {
       .catch(() => setError("Failed to load profile"));
   }, []);
 
+  const stats = useMemo(() => {
+    if (!data) return null;
+
+    const totalCourses = data.courses.length;
+    const completedCourses = data.courses.filter(
+      (c) => c.total_lessons > 0 && c.completed_lessons === c.total_lessons
+    ).length;
+
+    const avgProgress =
+      totalCourses > 0
+        ? Math.round(
+            data.courses.reduce((sum, c) => sum + c.progress_percent, 0) /
+              totalCourses
+          )
+        : 0;
+
+    return {
+      totalCourses,
+      completedCourses,
+      avgProgress,
+    };
+  }, [data]);
+
   if (error) {
     return (
       <div className="container page-shell">
@@ -20,7 +43,7 @@ export default function Home() {
     );
   }
 
-  if (!data) {
+  if (!data || !stats) {
     return (
       <div className="container page-shell">
         <p className="loading-text">Loading profile...</p>
@@ -39,27 +62,48 @@ export default function Home() {
       </div>
 
       <div className="home-grid">
-        <div className="card">
+        <div className="card home-profile-card">
           <h2>Profile Overview</h2>
-          <div className="profile-stats">
-            <p><strong>Username:</strong> {data.username}</p>
-            <p><strong>Email:</strong> {data.email}</p>
-            <p><strong>Role:</strong> {data.role}</p>
-            <p><strong>Skill level:</strong> {data.skill_level}</p>
-            <p><strong>Total score:</strong> {data.total_score}</p>
-            <p><strong>Completed lessons:</strong> {data.completed_lessons}</p>
+
+          <div className="profile-grid">
+            <div className="profile-row">
+              <span>Username</span>
+              <strong>{data.username}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Email</span>
+              <strong>{data.email}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Role</span>
+              <strong>{data.role}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Skill level</span>
+              <strong>{data.skill_level ?? "beginner"}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Total score</span>
+              <strong>{data.total_score}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Completed lessons</span>
+              <strong>{data.completed_lessons}</strong>
+            </div>
           </div>
         </div>
 
-        <div className="card">
+        <div className="card home-actions-card">
           <h2>Quick Actions</h2>
           <div className="quick-actions">
             <Link to="/courses">
               <button className="button">Browse Courses</button>
             </Link>
+
             <Link to="/progress">
               <button className="button button-muted">View Progress</button>
             </Link>
+
             {data.skill_level !== "advanced" && (
               <Link to="/level-up-test">
                 <button className="button">Take Level-Up Test</button>
@@ -69,8 +113,32 @@ export default function Home() {
         </div>
       </div>
 
+      <div className="home-stats-grid">
+        <div className="card stat-card">
+          <span className="stat-label">Total Courses</span>
+          <strong className="stat-value">{stats.totalCourses}</strong>
+        </div>
+
+        <div className="card stat-card">
+          <span className="stat-label">Completed Courses</span>
+          <strong className="stat-value">{stats.completedCourses}</strong>
+        </div>
+
+        <div className="card stat-card">
+          <span className="stat-label">Average Progress</span>
+          <strong className="stat-value">{stats.avgProgress}%</strong>
+          <div className="progress-bar-wrapper compact">
+            <div
+              className="progress-bar-fill"
+              style={{ width: `${stats.avgProgress}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="card">
         <h2>Course Progress</h2>
+
         {data.courses.length === 0 ? (
           <p>No courses yet.</p>
         ) : (
@@ -81,12 +149,14 @@ export default function Home() {
                   <strong>{c.course_title}</strong>
                   <span>{c.progress_percent}%</span>
                 </div>
+
                 <div className="progress-bar-wrapper">
                   <div
                     className="progress-bar-fill"
                     style={{ width: `${c.progress_percent}%` }}
                   />
                 </div>
+
                 <small>
                   {c.completed_lessons}/{c.total_lessons} lessons completed
                 </small>

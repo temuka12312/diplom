@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getProgressSummary } from "../api/progress";
 import type { ProgressSummary, CourseProgress } from "../api/progress";
 import { getRecommendations } from "../api/ai";
@@ -29,29 +29,32 @@ export default function ProgressSummaryPage() {
       .finally(() => setRecsLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <div className="container page-shell">
-        <p className="loading-text">Loading progress...</p>
-      </div>
-    );
-  }
+  const stats = useMemo(() => {
+    if (!data) return null;
 
-  if (error) {
-    return (
-      <div className="container page-shell">
-        <p className="error-text">{error}</p>
-      </div>
-    );
-  }
+    const totalCourses = data.courses.length;
+    const completedCourses = data.courses.filter(
+      (c) => c.total_lessons > 0 && c.completed_lessons === c.total_lessons
+    ).length;
 
-  if (!data) {
-    return (
-      <div className="container page-shell">
-        <p>No data.</p>
-      </div>
-    );
-  }
+    const avgProgress =
+      totalCourses > 0
+        ? Math.round(
+            data.courses.reduce((sum, c) => sum + c.progress_percent, 0) /
+              totalCourses
+          )
+        : 0;
+
+    return {
+      totalCourses,
+      completedCourses,
+      avgProgress,
+    };
+  }, [data]);
+
+  if (loading) return <p className="loading-text">Loading progress...</p>;
+  if (error) return <p className="error-text">{error}</p>;
+  if (!data || !stats) return <p>No data.</p>;
 
   const getQuizScoreClass = (score: number) => {
     if (score >= 80) return "quiz-score-high";
@@ -60,20 +63,8 @@ export default function ProgressSummaryPage() {
     return "quiz-score-none";
   };
 
-  const totalCourses = data.courses.length;
-  const completedCourses = data.courses.filter(
-    (c) => c.progress_percent >= 100
-  ).length;
-  const averageProgress =
-    totalCourses > 0
-      ? Math.round(
-          data.courses.reduce((sum, c) => sum + c.progress_percent, 0) /
-            totalCourses
-        )
-      : 0;
-
   return (
-    <div className="container page-shell">
+    <div className="progress-page">
       <div className="page-header">
         <span className="page-kicker">Performance Overview</span>
         <h1 className="page-title">My Learning Progress</h1>
@@ -82,30 +73,36 @@ export default function ProgressSummaryPage() {
         </p>
       </div>
 
-      <div className="home-grid" style={{ marginBottom: 20 }}>
-        <section className="profile-section">
+      <div className="progress-top-grid">
+        <section className="card profile-section">
           <h2>Profile</h2>
-          <p>
-            <strong>Username:</strong> {data.username}
-          </p>
-          <p>
-            <strong>Email:</strong> {data.email}
-          </p>
-          <p>
-            <strong>Role:</strong> {data.role ?? "student"}
-          </p>
-          <p>
-            <strong>Skill level:</strong>{" "}
-            <span className="level-pill pill-beginner">
-              {data.skill_level ?? "not set"}
-            </span>
-          </p>
-          <p>
-            <strong>Total score:</strong> {data.total_score}
-          </p>
-          <p>
-            <strong>Completed lessons:</strong> {data.completed_lessons}
-          </p>
+
+          <div className="profile-grid">
+            <div className="profile-row">
+              <span>Username</span>
+              <strong>{data.username}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Email</span>
+              <strong>{data.email}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Role</span>
+              <strong>{data.role ?? "student"}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Skill level</span>
+              <strong>{data.skill_level ?? "not set"}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Total score</span>
+              <strong>{data.total_score}</strong>
+            </div>
+            <div className="profile-row">
+              <span>Completed lessons</span>
+              <strong>{data.completed_lessons}</strong>
+            </div>
+          </div>
 
           <div className="level-up-box">
             <h3 className="level-up-title">Level Progress</h3>
@@ -116,53 +113,44 @@ export default function ProgressSummaryPage() {
                   Take a level-up test to unlock higher-level courses.
                 </p>
                 <Link to="/level-up-test" className="level-up-link">
-                  <button className="level-up-button">Take Level-Up Test</button>
+                  <button className="button level-up-button">Take Level-Up Test</button>
                 </Link>
               </>
             ) : (
-              <p className="level-up-max">
-                You are already at the highest level.
-              </p>
+              <p className="level-up-max">You are already at the highest level.</p>
             )}
           </div>
         </section>
 
-        <section className="profile-section">
+        <section className="card quick-stats-card">
           <h2>Quick Stats</h2>
-          <div className="home-course-list">
-            <div className="home-course-item">
-              <div className="home-course-top">
-                <strong>Total Courses</strong>
-                <span>{totalCourses}</span>
-              </div>
-            </div>
 
-            <div className="home-course-item">
-              <div className="home-course-top">
-                <strong>Completed Courses</strong>
-                <span>{completedCourses}</span>
-              </div>
-            </div>
+          <div className="quick-stat-box">
+            <span>Total Courses</span>
+            <strong>{stats.totalCourses}</strong>
+          </div>
 
-            <div className="home-course-item">
-              <div className="home-course-top">
-                <strong>Average Progress</strong>
-                <span>{averageProgress}%</span>
-              </div>
-              <div className="progress-bar-wrapper">
-                <div
-                  className="progress-bar-fill"
-                  style={{ width: `${averageProgress}%` }}
-                />
-              </div>
+          <div className="quick-stat-box">
+            <span>Completed Courses</span>
+            <strong>{stats.completedCourses}</strong>
+          </div>
+
+          <div className="quick-stat-box">
+            <span>Average Progress</span>
+            <strong>{stats.avgProgress}%</strong>
+
+            <div className="progress-bar-wrapper compact">
+              <div
+                className="progress-bar-fill"
+                style={{ width: `${stats.avgProgress}%` }}
+              />
             </div>
           </div>
         </section>
       </div>
 
-      <section className="courses-section">
+      <section className="card courses-section">
         <h2>Courses</h2>
-
         {data.courses.length === 0 ? (
           <p>No courses yet.</p>
         ) : (
@@ -176,52 +164,47 @@ export default function ProgressSummaryPage() {
               </tr>
             </thead>
             <tbody>
-              {data.courses.map((c: CourseProgress) => {
-                const score = (c as any).course_score ?? 0;
-
-                return (
-                  <tr key={c.course_id}>
-                    <td>
-                      <Link to={`/courses/${c.course_id}`}>
-                        {c.course_title}
-                      </Link>
-                    </td>
-
-                    <td className="center">
-                      {c.completed_lessons} / {c.total_lessons}
-                    </td>
-
-                    <td>
-                      <div className="progress-bar-wrapper">
-                        <div
-                          className="progress-bar-fill"
-                          style={{ width: `${c.progress_percent}%` }}
-                        />
-                      </div>
-                      <span className="progress-percent">
-                        {c.progress_percent}%
-                      </span>
-                    </td>
-
-                    <td className="center">
-                      <span
-                        className={`quiz-score-badge ${getQuizScoreClass(score)}`}
-                      >
-                        {typeof score === "number" ? score.toFixed(0) : score}%
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+              {data.courses.map((c: CourseProgress) => (
+                <tr key={c.course_id}>
+                  <td>{c.course_title}</td>
+                  <td className="center">
+                    {c.completed_lessons} / {c.total_lessons}
+                  </td>
+                  <td>
+                    <div className="progress-bar-wrapper">
+                      <div
+                        className="progress-bar-fill"
+                        style={{ width: `${c.progress_percent}%` }}
+                      />
+                    </div>
+                    <span className="progress-percent">{c.progress_percent}%</span>
+                  </td>
+                  <td className="center">
+                    <span
+                      className={`quiz-score-badge ${getQuizScoreClass(
+                        (c as any).course_score ?? 0
+                      )}`}
+                    >
+                      {((c as any).course_score ?? 0).toFixed
+                        ? (c as any).course_score.toFixed(0)
+                        : (c as any).course_score ?? 0}
+                      %
+                    </span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}
       </section>
 
-      <section className="recs-section">
+      <section className="card recs-section">
         <h2>Recommended Lessons</h2>
 
-        {recsLoading && <p className="loading-text">Loading recommendations...</p>}
+        {recsLoading && (
+          <p className="loading-text">Loading recommendations...</p>
+        )}
+
         {recsError && <p className="error-text">{recsError}</p>}
 
         {!recsLoading && !recsError && (

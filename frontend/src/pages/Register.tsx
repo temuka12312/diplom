@@ -1,72 +1,110 @@
-import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { loginApi } from "../api/auth";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { registerApi } from "../api/auth";
+import AuthMascot from "../components/AuthMascot";
 
-export default function Login() {
+type MascotMode =
+  | "idle"
+  | "look-left"
+  | "look-center"
+  | "look-right"
+  | "cover-eyes";
+
+export default function Register() {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [focusedField, setFocusedField] = useState<"username" | "email" | "password" | null>(null);
   const [error, setError] = useState("");
+
+  const mascotMode = useMemo<MascotMode>(() => {
+    if (focusedField === "password") return "cover-eyes";
+
+    if (focusedField === "username") {
+      if (username.length === 0) return "look-center";
+      if (username.length < 8) return "look-left";
+      return "look-right";
+    }
+
+    if (focusedField === "email") {
+      if (email.length === 0) return "look-center";
+      if (email.length < 10) return "look-left";
+      return "look-right";
+    }
+
+    return "idle";
+  }, [focusedField, username, email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     try {
-      const data = await loginApi(username, password);
-
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
-
-      navigate("/");
-    } catch (err) {
-      setError("Нэвтрэх нэр эсвэл нууц үг буруу байна.");
+      await registerApi(username, email, password);
+      navigate("/login");
+    } catch {
+      setError("Бүртгүүлэх үед алдаа гарлаа.");
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <span className="page-kicker">Welcome Back</span>
-        <h1 className="auth-title">Login</h1>
-        <p className="auth-subtitle">
-          LOTUS Learn систем рүү нэвтэрч суралцах аяллаа үргэлжлүүлээрэй.
-        </p>
+    <AuthMascot
+      mode={mascotMode}
+      title="Create account"
+      subtitle="Шинэ бүртгэл үүсгээд өөрийн шатлалтай сургалтыг эхлүүлээрэй."
+    >
+      <div className="auth-form-shell">
+        <h2>Register</h2>
+        <p className="auth-note">Шинэ хэрэглэгчийн мэдээллээ оруулна уу.</p>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        {error && <div className="auth-error">{error}</div>}
+
+        <form className="auth-form" onSubmit={handleSubmit}>
           <div className="auth-field">
             <label>Username</label>
             <input
-              className="input"
-              placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              onFocus={() => setFocusedField("username")}
+              onBlur={() => setFocusedField(null)}
+              placeholder="temuulen"
+            />
+          </div>
+
+          <div className="auth-field">
+            <label>Email</label>
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onFocus={() => setFocusedField("email")}
+              onBlur={() => setFocusedField(null)}
+              placeholder="test@gmail.com"
             />
           </div>
 
           <div className="auth-field">
             <label>Password</label>
             <input
-              className="input"
               type="password"
-              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onFocus={() => setFocusedField("password")}
+              onBlur={() => setFocusedField(null)}
+              placeholder="••••••••"
             />
           </div>
 
-          {error && <p className="error-text">{error}</p>}
-
-          <button className="button auth-button" type="submit">
-            Login
+          <button className="auth-submit" type="submit">
+            Register
           </button>
         </form>
 
-        <p className="auth-footer">
-          Бүртгэлгүй юу? <Link to="/register">Register</Link>
-        </p>
+        <div className="auth-switch">
+          Аль хэдийн бүртгэлтэй юу? <Link to="/login">Login</Link>
+        </div>
       </div>
-    </div>
+    </AuthMascot>
   );
 }

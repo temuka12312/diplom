@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ChatPopup from "./ChatPopup";
-import { FiMessageCircle } from "react-icons/fi"; 
+import { RiRobot2Line } from "react-icons/ri";
 import "../style/ChatWidget.css";
 
 export default function ChatWidget() {
@@ -8,11 +8,17 @@ export default function ChatWidget() {
 
   return (
     <>
-      <div className="chat-button" onClick={() => setOpen(!open)}>
-        <FiMessageCircle size={26} />
-      </div>
+      <button
+        className={`chat-button ${open ? "open" : ""}`}
+        onClick={() => setOpen(!open)}
+        aria-label="Toggle chat assistant"
+        type="button"
+      >
+        <RiRobot2Line size={28} />
+        <span className="chat-ping" />
+      </button>
 
-      {open && <ChatPopup />}
+      {open && <ChatPopup onClose={() => setOpen(false)} />}
     </>
   );
 }

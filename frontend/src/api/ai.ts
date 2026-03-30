@@ -120,8 +120,6 @@ export const submitLevelUpTest = async (
   return res.data;
 };
 
-/* ---------- CHAT ---------- */
-
 export const sendChat = async (message: string) => {
   const res = await api.post("/ai/chat/", { message });
   return res.data.reply;

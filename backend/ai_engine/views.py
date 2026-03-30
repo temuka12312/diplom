@@ -568,6 +568,7 @@ def ai_chat(request):
         prompt = (
             "Чи e-learning платформын AI туслах юм. "
             "Programming, course, lesson, learning зөвлөгөө өгнө. "
+            "Хариултаа markdown хэлбэрээр, цэвэр шинэ мөртэй, шаардлагатай бол numbered list ашиглан өг."
             "Монгол хэл дээр, ойлгомжтой, товч хариул.\n\n"
             f"User level: {getattr(user, 'skill_level', 'unknown')}\n"
             f"User message: {message}"

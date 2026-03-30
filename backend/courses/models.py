@@ -1,11 +1,12 @@
 from django.db import models
 from django.conf import settings
-from django.core.validators import FileExtensionValidator  # ← ШИНЭ
+from django.core.validators import FileExtensionValidator
 
 LEVEL_CHOICES = (
-    ("beginner", "Beginner"),
-    ("intermediate", "Intermediate"),
-    ("advanced", "Advanced"),
+    ("beginner", "Анхан"),
+    ("elementary", "Суурь"),
+    ("intermediate", "Дунд"),
+    ("advanced", "Ахисан"),
 )
 
 
@@ -39,10 +40,8 @@ class Lesson(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField(blank=True)
 
-    # YouTube болон бусад линк хэлбэрийн видео байж болно
     video_url = models.URLField(blank=True)
 
-    # Шууд upload хийдэг видео файл
     video_file = models.FileField(
         upload_to="lessons/videos/",
         null=True,
@@ -50,7 +49,6 @@ class Lesson(models.Model):
         validators=[FileExtensionValidator(["mp4", "mov", "avi", "mkv"])],
     )
 
-    # PDF лекц
     file = models.FileField(
         upload_to="lessons/files/",
         null=True,
@@ -58,7 +56,6 @@ class Lesson(models.Model):
         validators=[FileExtensionValidator(["pdf"])],
     )
 
-    # PPT, DOCX, ZIP гэх мэт нэмэлт материал
     attachment = models.FileField(
         upload_to="lessons/attachments/",
         null=True,
