@@ -11,32 +11,47 @@ import ProgressSummaryPage from "../pages/ProgressSummary";
 import PlacementTest from "../pages/PlacementTest";
 import LevelUpTest from "../pages/LevelUpTest";
 import Community from "../pages/Community";
+import Tracks from "../pages/Tracks";
+import TrackCourses from "../pages/TrackCourses";
 
 import ChatWidget from "../components/ChatWidget";
 import DashboardLayout from "../components/DashboardLayout";
 import AuthLayout from "../components/AuthLayout";
 import ProtectedRoute from "./ProtectedRoute";
+import PageFade from "../components/PageFade";
 
 function Layout() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route
+          path="/"
+          element={
+            <PageFade>
+              <LandingPage />
+            </PageFade>
+          }
+        />
 
         <Route
           path="/login"
           element={
-            <AuthLayout>
-              <Login />
-            </AuthLayout>
+            <PageFade>
+              <AuthLayout>
+                <Login />
+              </AuthLayout>
+            </PageFade>
           }
         />
+
         <Route
           path="/register"
           element={
-            <AuthLayout>
-              <Register />
-            </AuthLayout>
+            <PageFade>
+              <AuthLayout>
+                <Register />
+              </AuthLayout>
+            </PageFade>
           }
         />
 
@@ -50,6 +65,7 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/courses"
           element={
@@ -60,6 +76,29 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/tracks"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Tracks />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/courses/track/:trackId"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <TrackCourses />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/courses/:id"
           element={
@@ -70,6 +109,7 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/courses/:courseId/lessons/:lessonId"
           element={
@@ -80,6 +120,7 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/progress"
           element={
@@ -90,6 +131,7 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/placement-test"
           element={
@@ -100,6 +142,7 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/level-up-test"
           element={
@@ -110,6 +153,7 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/community"
           element={

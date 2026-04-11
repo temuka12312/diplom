@@ -1,11 +1,14 @@
-import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { getTracks, type LearningTrack } from "../api/courses";
 import { logout } from "../hooks/useAuth";
 import useAuth from "../hooks/useAuth";
 import {
   FaHome,
   FaBook,
   FaChartLine,
+  FaChevronDown,
   FaRocket,
   FaBars,
   FaTimes,
@@ -20,19 +23,32 @@ interface Props {
 
 export default function DashboardLayout({ children }: Props) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
   const [collapsed, setCollapsed] = useState(false);
+  const [tracks, setTracks] = useState<LearningTrack[]>([]);
+  const [coursesOpen, setCoursesOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  const isAdmin = (user as any)?.is_superuser || (user as any)?.is_staff;
+  useEffect(() => {
+    getTracks().then(setTracks).catch(() => {});
+  }, []);
+
+  const isAdmin = Boolean(user?.is_superuser || user?.is_staff);
   const userLabel = isAdmin ? "Admin" : "Student";
 
   return (
-    <div className="dashboard-shell">
+    <motion.div
+      className="dashboard-shell"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
       <div className="bg-orb orb-1" />
       <div className="bg-orb orb-2" />
       <div className="bg-orb orb-3" />
@@ -73,7 +89,7 @@ export default function DashboardLayout({ children }: Props) {
 
             <nav className="sidebar-nav">
               <NavLink
-                to="/"
+                to="/dashboard"
                 end
                 className={({ isActive }) =>
                   isActive ? "nav-item active" : "nav-item"
@@ -84,16 +100,53 @@ export default function DashboardLayout({ children }: Props) {
                 {!collapsed && <span>Dashboard</span>}
               </NavLink>
 
-              <NavLink
-                to="/courses"
-                className={({ isActive }) =>
-                  isActive ? "nav-item active" : "nav-item"
-                }
+              <button
+                type="button"
+                className={`nav-item nav-dropdown-toggle ${coursesOpen ? "open" : ""}`}
+                onClick={() => setCoursesOpen((prev) => !prev)}
                 title="Courses"
               >
-                <FaBook />
-                {!collapsed && <span>Courses</span>}
-              </NavLink>
+                <div className="nav-dropdown-left">
+                  <FaBook />
+                  {!collapsed && <span>Courses</span>}
+                </div>
+                {!collapsed && <FaChevronDown className="dropdown-icon" />}
+              </button>
+
+              {!collapsed && coursesOpen && (
+                <div className="nav-submenu">
+                  <NavLink
+                    to="/tracks"
+                    className={({ isActive }) =>
+                      isActive ? "nav-subitem active" : "nav-subitem"
+                    }
+                  >
+                    Бүх чиглэл
+                  </NavLink>
+
+                  <NavLink
+                    to="/courses"
+                    className={({ isActive }) =>
+                      isActive ? "nav-subitem active" : "nav-subitem"
+                    }
+                  >
+                    Бүх хичээл
+                  </NavLink>
+
+
+                  {tracks.map((track) => (
+                    <NavLink
+                      key={track.id}
+                      to={`/courses/track/${track.id}`}
+                      className={({ isActive }) =>
+                        isActive ? "nav-subitem active" : "nav-subitem"
+                      }
+                    >
+                      {track.name}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
 
               <NavLink
                 to="/progress"
@@ -116,6 +169,7 @@ export default function DashboardLayout({ children }: Props) {
                 <FaRocket />
                 {!collapsed && <span>Level Test</span>}
               </NavLink>
+
               <NavLink
                 to="/community"
                 className={({ isActive }) =>
@@ -150,9 +204,22 @@ export default function DashboardLayout({ children }: Props) {
             </div>
           </header>
 
-          <div className="content">{children}</div>
+          <div className="content">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0, filter: "blur(4px)" }}
+                animate={{ opacity: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0, filter: "blur(4px)" }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                style={{ width: "100%" }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -150,8 +150,8 @@
   width: 38px;
   height: 38px;
   border: 1px solid rgba(167, 191, 220, 0.35);
-  background: rgba(255, 255, 255, 0.82);
-  color: #55789d;
+  background: rgb(126 126 126 / 42%);
+  color: #ffff;
   border-radius: 12px;
   display: grid;
   place-items: center;
@@ -330,7 +330,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #7eb6f0;
+  background: #44ff00;
   box-shadow: 0 0 0 2px rgba(126, 182, 240, 0.22);
 }
 
@@ -341,7 +341,7 @@
 }
 
 .admin-badge .user-dot {
-  background: #e35d5d;
+  background: #ff0000;
   box-shadow: 0 0 0 2px rgba(227, 93, 93, 0.2);
 }
 
@@ -405,4 +405,54 @@
   .header {
     padding: 0 16px;
   }
+}
+.nav-dropdown-toggle {
+  width: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  justify-content: space-between;
+}
+
+.nav-dropdown-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.dropdown-icon {
+  transition: transform 0.2s ease;
+}
+
+.nav-dropdown-toggle.open .dropdown-icon {
+  transform: rotate(180deg);
+}
+
+.nav-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 8px 14px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav-subitem {
+  color: rgba(226, 232, 240, 0.72);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 10px;
+  transition: 0.18s ease;
+}
+
+.nav-subitem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+}
+
+.nav-subitem.active {
+  background: rgba(124, 77, 255, 0.16);
+  color: #c4b5fd;
 }

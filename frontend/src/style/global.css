@@ -108,6 +108,7 @@ a:hover {
   border: 1px solid var(--border);
   backdrop-filter: blur(18px);
   box-shadow: var(--shadow-sm);
+  margin-top: 20px;
 }
 
 .card h2 {
@@ -409,7 +410,7 @@ a:hover {
   font-weight: 800;
   letter-spacing: 0.02em;
 }
-.status-pill.success { background: var(--green-soft); color: #166534; }
+.status-pill.success { background: var(--green-soft); }
 
 .video-frame-wrap {
   position: relative;
@@ -603,7 +604,7 @@ a:hover {
   border-radius: 14px;
   transition: background 0.15s;
 }
-.lesson-list-item:hover { background: #ede8e3; }
+.lesson-list-item:hover { background: #d4d4d44f; }
 .lesson-links { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
 
 
@@ -714,16 +715,21 @@ a:hover {
 }
 
 .pill-beginner {
-  background: rgba(34, 197, 94, 0.16) !important;
-  color: #86efac !important;
+  background: rgba(34, 197, 94, 0.16);
+  color: #86efac;
+}
+
+.pill-elementary {
+  background: rgba(56, 189, 248, 0.16);
+  color: #7dd3fc;
 }
 
 .pill-intermediate {
-  background: rgba(245, 158, 11, 0.16) !important;
-  color: #fcd34d !important;
+  background: rgba(245, 158, 11, 0.16);
+  color: #fcd34d;
 }
 
 .pill-advanced {
-  background: rgba(239, 68, 68, 0.16) !important;
-  color: #fca5a5 !important;
+  background: rgba(239, 68, 68, 0.16);
+  color: #fca5a5;
 }

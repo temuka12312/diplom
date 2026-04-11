@@ -13,12 +13,7 @@ export default function PlacementTest() {
   const [result, setResult] = useState<string | null>(null);
 
   const [showModal, setShowModal] = useState(false);
-  const [scoreData, setScoreData] = useState<{
-    correct: number;
-    total: number;
-    percent: number;
-    level: string;
-  } | null>(null);
+  const [scoreData, setScoreData] = useState<{ correct: number; total: number; percent: number; level: string; } | null>(null);
 
   useEffect(() => {
     getPlacementTest()
@@ -133,7 +128,6 @@ export default function PlacementTest() {
       {showModal && scoreData && (
         <div className="modal-overlay">
           <div className="modal modal-lg">
-            <div className="result-icon">🎯</div>
             <h2>Шалгалтын үр дүн</h2>
 
             <p className="result-stat">

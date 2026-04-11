@@ -6,13 +6,22 @@ import type { RecommendedLesson } from "../api/ai";
 import { Link } from "react-router-dom";
 import "../style/ProgressSummary.css";
 
+type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
+
+const levelLabels: Record<UserLevel, string> = {
+  beginner: "Анхан",
+  elementary: "Суурь",
+  intermediate: "Дунд",
+  advanced: "Ахисан",
+};
+
 export default function ProgressSummaryPage() {
   const [data, setData] = useState<ProgressSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [recs, setRecs] = useState<RecommendedLesson[]>([]);
-  const [recsLoading, setRecsLoading] = useState(false);
+  const [recsLoading, setRecsLoading] = useState(true);
   const [recsError, setRecsError] = useState("");
 
   useEffect(() => {
@@ -21,8 +30,6 @@ export default function ProgressSummaryPage() {
       .catch(() => setError("Failed to load progress summary"))
       .finally(() => setLoading(false));
 
-    setRecsLoading(true);
-    setRecsError("");
     getRecommendations()
       .then((items) => setRecs(items))
       .catch(() => setRecsError("Failed to load recommendations"))
@@ -63,6 +70,9 @@ export default function ProgressSummaryPage() {
     return "quiz-score-none";
   };
 
+  const userLevel = (data.skill_level as UserLevel) || "beginner";
+  const levelText = levelLabels[userLevel] || "Анхан";
+
   return (
     <div className="progress-page">
       <div className="page-header">
@@ -92,7 +102,7 @@ export default function ProgressSummaryPage() {
             </div>
             <div className="profile-row">
               <span>Skill level</span>
-              <strong>{data.skill_level ?? "not set"}</strong>
+              <strong>{levelText}</strong>
             </div>
             <div className="profile-row">
               <span>Total score</span>
@@ -107,7 +117,7 @@ export default function ProgressSummaryPage() {
           <div className="level-up-box">
             <h3 className="level-up-title">Level Progress</h3>
 
-            {data.skill_level !== "advanced" ? (
+            {userLevel !== "advanced" ? (
               <>
                 <p className="level-up-text">
                   Take a level-up test to unlock higher-level courses.
@@ -164,35 +174,36 @@ export default function ProgressSummaryPage() {
               </tr>
             </thead>
             <tbody>
-              {data.courses.map((c: CourseProgress) => (
-                <tr key={c.course_id}>
-                  <td>{c.course_title}</td>
-                  <td className="center">
-                    {c.completed_lessons} / {c.total_lessons}
-                  </td>
-                  <td>
-                    <div className="progress-bar-wrapper">
-                      <div
-                        className="progress-bar-fill"
-                        style={{ width: `${c.progress_percent}%` }}
-                      />
-                    </div>
-                    <span className="progress-percent">{c.progress_percent}%</span>
-                  </td>
-                  <td className="center">
-                    <span
-                      className={`quiz-score-badge ${getQuizScoreClass(
-                        (c as any).course_score ?? 0
-                      )}`}
-                    >
-                      {((c as any).course_score ?? 0).toFixed
-                        ? (c as any).course_score.toFixed(0)
-                        : (c as any).course_score ?? 0}
-                      %
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {data.courses.map((c: CourseProgress) => {
+                const courseScore = c.course_score ?? 0;
+
+                return (
+                  <tr key={c.course_id}>
+                    <td>{c.course_title}</td>
+                    <td className="center">
+                      {c.completed_lessons} / {c.total_lessons}
+                    </td>
+                    <td>
+                      <div className="progress-bar-wrapper">
+                        <div
+                          className="progress-bar-fill"
+                          style={{ width: `${c.progress_percent}%` }}
+                        />
+                      </div>
+                      <span className="progress-percent">{c.progress_percent}%</span>
+                    </td>
+                    <td className="center">
+                      <span
+                        className={`quiz-score-badge ${getQuizScoreClass(
+                          courseScore
+                        )}`}
+                      >
+                        {courseScore.toFixed(0)}%
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

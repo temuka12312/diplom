@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
+import { API_ORIGIN } from "../api/axios";
 import { getLandingContent, type LandingContent } from "../api/website";
 import { isAuthenticated } from "../hooks/useAuth";
 import "../style/landing.css";
@@ -9,6 +10,12 @@ const fallbackSlides = [
   "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=80",
   "https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=1200&q=80",
 ];
+
+function resolveImageUrl(image?: string | null) {
+  if (!image) return null;
+  if (image.startsWith("http://") || image.startsWith("https://")) return image;
+  return `${API_ORIGIN}${image}`;
+}
 
 export default function LandingPage() {
   const [data, setData] = useState<LandingContent | null>(null);
@@ -25,9 +32,9 @@ export default function LandingPage() {
     if (!data) return fallbackSlides;
 
     return [
-      data.slide_image_1 || fallbackSlides[0],
-      data.slide_image_2 || fallbackSlides[1],
-      data.slide_image_3 || fallbackSlides[2],
+      resolveImageUrl(data.slide_image_1) || fallbackSlides[0],
+      resolveImageUrl(data.slide_image_2) || fallbackSlides[1],
+      resolveImageUrl(data.slide_image_3) || fallbackSlides[2],
     ];
   }, [data]);
 

@@ -11,6 +11,10 @@ BANNED_WORDS = [
     "lalr",
     "pizda",
     "gichii",
+    "gicii",
+    "gici",
+    "lalar",
+    "pzda",
 ]
 
 

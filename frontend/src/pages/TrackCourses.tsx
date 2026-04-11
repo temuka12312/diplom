@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { getCourses, getMyLevelCourses } from "../api/courses";
+import { Link, useParams } from "react-router-dom";
+import { getTrackCourses, type Course } from "../api/courses";
 import { meApi } from "../api/auth";
-import type { Course } from "../api/courses";
 import "../style/courses.css";
 
 type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
@@ -21,10 +20,10 @@ const levelLabels: Record<UserLevel, string> = {
   advanced: "Ахисан",
 };
 
-export default function Courses() {
+export default function TrackCourses() {
+  const { trackId } = useParams<{ trackId: string }>();
   const [courses, setCourses] = useState<Course[]>([]);
   const [error, setError] = useState("");
-  const [mode, setMode] = useState<"my" | "all">("my");
   const [expanded, setExpanded] = useState<number | null>(null);
   const [userLevel, setUserLevel] = useState<UserLevel>("beginner");
 
@@ -33,18 +32,16 @@ export default function Courses() {
       .then((user) => {
         setUserLevel((user.skill_level as UserLevel) || "beginner");
       })
-      .catch(() => {
-        setUserLevel("beginner");
-      });
+      .catch(() => setUserLevel("beginner"));
   }, []);
 
   useEffect(() => {
-    const loader = mode === "my" ? getMyLevelCourses : getCourses;
+    if (!trackId) return;
 
-    loader()
-      .then((data) => setCourses(data))
-      .catch(() => setError("Failed to load courses"));
-  }, [mode]);
+    getTrackCourses(trackId)
+      .then(setCourses)
+      .catch(() => setError("Курсүүдийг ачаалж чадсангүй."));
+  }, [trackId]);
 
   const isLocked = (courseLevel: string) => {
     const cLevel = (courseLevel as UserLevel) || "beginner";
@@ -58,43 +55,22 @@ export default function Courses() {
     return "pill-advanced";
   };
 
-  const getLevelLabel = (level: string) => {
-    return levelLabels[(level as UserLevel) || "beginner"] || "Анхан";
-  };
+  const getLevelLabel = (level: string) =>
+    levelLabels[(level as UserLevel) || "beginner"] || "Анхан";
 
   return (
     <div className="container page-shell">
-      <div className="page-header">
-        <span className="page-kicker">Learning Paths</span>
-        <h1 className="page-title">Курсүүд</h1>
-        <p className="page-subtitle">
-          Таны түвшин, ахицад тохирсон курсүүдийг эндээс үзнэ.
-        </p>
+      <div className="back-link-wrap">
+        <Link className="back-link" to="/courses">
+          ← Чиглэлүүд рүү буцах
+        </Link>
       </div>
 
-      <div className="card courses-topbar">
-        <div>
-          <p className="mini-label">Таны түвшин</p>
-          <span className={`level-pill ${getLevelClass(userLevel)}`}>
-            {getLevelLabel(userLevel)}
-          </span>
-        </div>
-
-        <div className="mode-switch">
-          <button
-            className={`button ${mode === "my" ? "" : "button-muted"}`}
-            onClick={() => setMode("my")}
-          >
-            Миний түвшин
-          </button>
-
-          <button
-            className={`button ${mode === "all" ? "" : "button-muted"}`}
-            onClick={() => setMode("all")}
-          >
-            Бүх курс
-          </button>
-        </div>
+      <div className="page-header">
+        <h1 className="page-title page-kicker">{courses[0]?.track_name || "Курсүүд"}</h1>
+        <p className="page-subtitle">
+          Энэ чиглэлд хамаарах сургалтын агуулгууд.
+        </p>
       </div>
 
       {error && <p className="error-text">{error}</p>}
@@ -112,7 +88,7 @@ export default function Courses() {
                 className={`card course-card ${locked ? "course-card-locked" : ""}`}
               >
                 <div className="course-card-head">
-                  <h2 className="course-title">
+                  <h2 className="course-title page-kicker">
                     {locked ? (
                       <span>{course.title}</span>
                     ) : (
@@ -145,7 +121,7 @@ export default function Courses() {
                 {locked ? (
                   <div className="locked-box">
                     <p className="warning-text">
-                      🔒 Энэ курсийг үзэхийн тулд илүү өндөр түвшин хэрэгтэй.
+                       Илүү өндөр түвшин шаардлагатай.
                     </p>
                     <button className="button button-muted" disabled>
                       Түгжээтэй

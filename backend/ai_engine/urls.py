@@ -8,6 +8,7 @@ from .views import (
     level_up_quiz,
     level_up_quiz_submit,
     ai_chat,
+    run_code,
 )
 
 urlpatterns = [
@@ -19,4 +20,5 @@ urlpatterns = [
     path("level-up-test/", level_up_quiz),
     path("level-up-test/submit/", level_up_quiz_submit),
     path("chat/", ai_chat),
+    path("run-code/", run_code),
 ]

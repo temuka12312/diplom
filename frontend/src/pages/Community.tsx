@@ -5,6 +5,7 @@ import {
   createCommunityComment,
   type CommunityPost,
 } from "../api/community";
+import { getApiErrorMessage } from "../api/axios";
 
 export default function Community() {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
@@ -42,12 +43,8 @@ export default function Community() {
       setTitle("");
       setContent("");
       loadPosts();
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.moderation_reason ||
-        err?.response?.data?.detail ||
-        "Failed to create post";
-      setError(msg);
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, "Failed to create post"));
     }
   };
 
@@ -63,12 +60,8 @@ export default function Community() {
 
       setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
       loadPosts();
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.moderation_reason ||
-        err?.response?.data?.detail ||
-        "Failed to add comment";
-      setError(msg);
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, "Failed to add comment"));
     }
   };
 

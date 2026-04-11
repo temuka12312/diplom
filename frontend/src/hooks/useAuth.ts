@@ -12,13 +12,11 @@ export const logout = () => {
 
 export default function useAuth() {
   const [user, setUser] = useState<MeResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => isAuthenticated());
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      setUser(null);
-      setLoading(false);
       return;
     }
 

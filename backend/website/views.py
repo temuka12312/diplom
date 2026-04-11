@@ -31,5 +31,5 @@ def landing_content(request):
             }
         )
 
-    serializer = LandingPageContentSerializer(obj)
+    serializer = LandingPageContentSerializer(obj, context={"request": request})
     return Response(serializer.data)

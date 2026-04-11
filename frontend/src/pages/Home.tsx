@@ -2,6 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProgressSummary, type ProgressSummary } from "../api/progress";
 
+type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
+
+const levelLabels: Record<UserLevel, string> = {
+  beginner: "Анхан",
+  elementary: "Суурь",
+  intermediate: "Дунд",
+  advanced: "Ахисан",
+};
+
 export default function Home() {
   const [data, setData] = useState<ProgressSummary | null>(null);
   const [error, setError] = useState("");
@@ -35,6 +44,9 @@ export default function Home() {
     };
   }, [data]);
 
+  const userLevel = (data?.skill_level as UserLevel) || "beginner";
+  const levelText = levelLabels[userLevel] || "Анхан";
+
   if (error) {
     return (
       <div className="container page-shell">
@@ -63,50 +75,50 @@ export default function Home() {
 
       <div className="home-grid">
         <div className="card home-profile-card">
-          <h2>Profile Overview</h2>
+          <h2>Профайлын мэдээлэл</h2>
 
           <div className="profile-grid">
             <div className="profile-row">
-              <span>Username</span>
+              <span>Хэрэглэгч</span>
               <strong>{data.username}</strong>
             </div>
             <div className="profile-row">
-              <span>Email</span>
+              <span>Имэйл</span>
               <strong>{data.email}</strong>
             </div>
             <div className="profile-row">
-              <span>Role</span>
+              <span>Эрх</span>
               <strong>{data.role}</strong>
             </div>
             <div className="profile-row">
-              <span>Skill level</span>
-              <strong>{data.skill_level ?? "beginner"}</strong>
+              <span>Түвшин</span>
+              <strong>{levelText}</strong>
             </div>
             <div className="profile-row">
-              <span>Total score</span>
+              <span>Нийт оноо</span>
               <strong>{data.total_score}</strong>
             </div>
             <div className="profile-row">
-              <span>Completed lessons</span>
+              <span>Дуусгасан хичээл</span>
               <strong>{data.completed_lessons}</strong>
             </div>
           </div>
         </div>
 
         <div className="card home-actions-card">
-          <h2>Quick Actions</h2>
+          <h2>Түргэн үйлдэл</h2>
           <div className="quick-actions">
             <Link to="/courses">
-              <button className="button">Browse Courses</button>
+              <button className="button">Курсүүд үзэх</button>
             </Link>
 
             <Link to="/progress">
-              <button className="button button-muted">View Progress</button>
+              <button className="button button-muted">Ахиц харах</button>
             </Link>
 
-            {data.skill_level !== "advanced" && (
+            {userLevel !== "advanced" && (
               <Link to="/level-up-test">
-                <button className="button">Take Level-Up Test</button>
+                <button className="button">Түвшин ахиулах тест</button>
               </Link>
             )}
           </div>
@@ -115,17 +127,19 @@ export default function Home() {
 
       <div className="home-stats-grid">
         <div className="card stat-card">
-          <span className="stat-label">Total Courses</span>
-          <strong className="stat-value">{stats.totalCourses}</strong>
+          <div className="profile-grid">
+            <div className="profile-row">
+              <span className="stat-label">Нийт курс: </span>
+              <strong className="stat-value">{stats.totalCourses}</strong>
+            </div>
+            <div className="profile-row">
+              <span className="stat-label">Дуусгасан курс: </span>
+              <strong className="stat-value">{stats.completedCourses}</strong>
+            </div>
+          </div>
         </div>
-
         <div className="card stat-card">
-          <span className="stat-label">Completed Courses</span>
-          <strong className="stat-value">{stats.completedCourses}</strong>
-        </div>
-
-        <div className="card stat-card">
-          <span className="stat-label">Average Progress</span>
+          <span className="stat-label">Дундаж ахиц: </span>
           <strong className="stat-value">{stats.avgProgress}%</strong>
           <div className="progress-bar-wrapper compact">
             <div
@@ -137,10 +151,10 @@ export default function Home() {
       </div>
 
       <div className="card">
-        <h2>Course Progress</h2>
+        <h2>Курсийн явц</h2>
 
         {data.courses.length === 0 ? (
-          <p>No courses yet.</p>
+          <p>Одоогоор курс алга.</p>
         ) : (
           <div className="home-course-list">
             {data.courses.map((c) => (
@@ -158,7 +172,7 @@ export default function Home() {
                 </div>
 
                 <small>
-                  {c.completed_lessons}/{c.total_lessons} lessons completed
+                  {c.completed_lessons}/{c.total_lessons} хичээл дууссан
                 </small>
               </div>
             ))}

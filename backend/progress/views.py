@@ -12,6 +12,10 @@ from courses.models import Course, Lesson
 from users.models import User
 
 
+def clamp_score(value, minimum=0.0, maximum=100.0):
+    return max(minimum, min(float(value), maximum))
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def lesson_progress_detail(request, lesson_id):
@@ -51,12 +55,13 @@ def complete_lesson(request, lesson_id):
         lesson=lesson,
     )
 
+    max_lesson_score = 100 + float(lesson.practice_bonus_score or 0)
     raw_score = request.data.get("score", None)
     try:
         if raw_score is None:
             score_value = float(lesson.score or 0)
         else:
-            score_value = float(raw_score)
+            score_value = clamp_score(raw_score, maximum=max_lesson_score)
     except (TypeError, ValueError):
         score_value = float(lesson.score or 0)
 

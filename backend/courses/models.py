@@ -10,7 +10,28 @@ LEVEL_CHOICES = (
 )
 
 
+class LearningTrack(models.Model):
+    name = models.CharField(max_length=120, unique=True)
+    description = models.TextField(blank=True)
+    slug = models.SlugField(unique=True)
+    icon = models.CharField(max_length=50, blank=True, default="FaBookOpen")
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["order", "name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Course(models.Model):
+    track = models.ForeignKey(
+        LearningTrack,
+        on_delete=models.CASCADE,
+        related_name="courses",
+        null=True,
+        blank=True,
+    )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     level = models.CharField(
@@ -64,6 +85,12 @@ class Lesson(models.Model):
 
     order = models.PositiveIntegerField(default=0)
     score = models.PositiveIntegerField(default=10)
+
+    practice_title = models.CharField(max_length=255, blank=True, default="")
+    practice_description = models.TextField(blank=True, default="")
+    practice_hint = models.TextField(blank=True, default="")
+    practice_expected_output = models.TextField(blank=True, default="")
+    practice_bonus_score = models.PositiveIntegerField(default=5)
 
     def __str__(self):
         return self.title

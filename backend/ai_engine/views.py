@@ -1,8 +1,14 @@
 import os
 import json
+import sys
+
+import tempfile
+import subprocess
+from pathlib import Path
 
 from google import genai
 
+from django.conf import settings
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,6 +17,43 @@ from rest_framework import status
 from progress.models import LessonProgress
 from courses.models import Lesson, Course
 from users.models import User
+
+try:
+    import resource
+except ImportError:
+    resource = None
+
+
+def apply_runner_limits():
+    if resource is None:
+        return
+
+    memory_limit_bytes = 128 * 1024 * 1024
+    output_file_limit_bytes = 1024 * 1024
+    cpu_seconds = max(1, int(settings.RUN_CODE_TIMEOUT_SECONDS) + 1)
+
+    for limit_name, limits in (
+        (resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds)),
+        (resource.RLIMIT_AS, (memory_limit_bytes, memory_limit_bytes)),
+        (resource.RLIMIT_FSIZE, (output_file_limit_bytes, output_file_limit_bytes)),
+    ):
+        try:
+            resource.setrlimit(limit_name, limits)
+        except (OSError, ValueError):
+            pass
+
+    if hasattr(resource, "RLIMIT_NPROC"):
+        try:
+            resource.setrlimit(resource.RLIMIT_NPROC, (16, 16))
+        except (OSError, ValueError):
+            pass
+
+
+def truncate_runner_output(value: str) -> str:
+    limit = int(settings.RUN_CODE_MAX_OUTPUT_CHARS)
+    if len(value) <= limit:
+        return value
+    return f"{value[:limit]}\n...[truncated]"
 
 
 def simple_summarize(text: str, max_sentences: int = 3) -> str:
@@ -119,6 +162,115 @@ def llm_quiz(text: str, num_questions: int = 3) -> list[dict]:
 
     except Exception:
         return []
+
+
+def llm_practice_task(text: str) -> dict:
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return {
+            "title": "Жижиг практик даалгавар",
+            "description": "Энэ хичээлийн агуулгад тулгуурлан богино хэмжээний практик даалгавар ажиллана уу.",
+            "hint": "Хичээлийн үндсэн ойлголтыг ашиглан бодож гүйцэтгэнэ.",
+            "expected_output": "Өөрийн хариулт эсвэл кодоо зөв логикоор бичсэн байна.",
+        }
+
+    try:
+        client = genai.Client(api_key=api_key)
+
+        prompt = (
+            "Доорх e-learning хичээлийн агуулгад үндэслэн 1 ширхэг жижиг практик даалгавар үүсгэ. "
+            "Даалгавар нь программчлал, код нөхөж бичих байж болно. "
+            "Хариуг Монгол хэл дээр өг. "
+            "Зөвхөн дараах JSON бүтэцтэй буцаа:\n\n"
+            "{\n"
+            '  "title": "Даалгаврын гарчиг",\n'
+            '  "description": "Даалгаврын тайлбар",\n'
+            '  "hint": "Товч hint",\n'
+            '  "expected_output": "Жишээ хариу эсвэл хүлээгдэх үр дүн"\n'
+            "}\n\n"
+            "JSON-оос өөр ямар ч текст бүү бич.\n\n"
+            f"Хичээлийн агуулга:\n{text}"
+        )
+
+        resp = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+        )
+
+        raw = (resp.text or "").strip()
+        raw = raw.replace("```json", "").replace("```", "").strip()
+
+        data = json.loads(raw)
+
+        return {
+            "title": str(data.get("title", "")).strip(),
+            "description": str(data.get("description", "")).strip(),
+            "hint": str(data.get("hint", "")).strip(),
+            "expected_output": str(data.get("expected_output", "")).strip(),
+        }
+
+    except Exception:
+        return {
+            "title": "Жижиг практик даалгавар",
+            "description": "Энэ хичээлийн агуулгад тулгуурлан богино хэмжээний практик даалгавар ажиллана уу.",
+            "hint": "Хичээлийн үндсэн ойлголтыг ашиглан бодож гүйцэтгэнэ.",
+            "expected_output": "Өөрийн хариулт эсвэл кодоо зөв логикоор бичсэн байна.",
+        }
+
+
+def generate_practice_task_from_lesson(lesson: Lesson) -> dict:
+    text_parts = []
+
+    if lesson.title:
+        text_parts.append(f"Lesson title: {lesson.title}")
+    if lesson.content:
+        text_parts.append(f"Lesson content: {lesson.content}")
+    if lesson.course and lesson.course.title:
+        text_parts.append(f"Course title: {lesson.course.title}")
+    if lesson.course and lesson.course.description:
+        text_parts.append(f"Course description: {lesson.course.description}")
+
+    source_text = "\n\n".join(text_parts).strip()
+
+    if not source_text:
+        return {
+            "title": "Жижиг практик даалгавар",
+            "description": "Энэ хичээлд practice task автоматаар үүсгэх хангалттай агуулга олдсонгүй.",
+            "hint": "Хичээлийн үндсэн санааг ашиглан богино дасгал хийж болно.",
+            "expected_output": "Өөрийн хариултыг тайлбарлаж бичнэ.",
+        }
+
+    return llm_practice_task(source_text)
+
+
+def ensure_practice_task_for_lesson(lesson: Lesson) -> Lesson:
+    has_existing_task = bool(
+        (lesson.practice_title or "").strip()
+        or (lesson.practice_description or "").strip()
+        or (lesson.practice_hint or "").strip()
+        or (lesson.practice_expected_output or "").strip()
+    )
+
+    if has_existing_task:
+        return lesson
+
+    generated = generate_practice_task_from_lesson(lesson)
+
+    lesson.practice_title = generated.get("title", "")
+    lesson.practice_description = generated.get("description", "")
+    lesson.practice_hint = generated.get("hint", "")
+    lesson.practice_expected_output = generated.get("expected_output", "")
+
+    lesson.save(
+        update_fields=[
+            "practice_title",
+            "practice_description",
+            "practice_hint",
+            "practice_expected_output",
+        ]
+    )
+
+    return lesson
 
 
 def collect_level_source_text(level: str) -> str:
@@ -242,9 +394,6 @@ def llm_level_up_quiz(current_level: str, num_questions: int = 10) -> list[dict]
 
 
 def sanitize_questions(questions: list[dict]) -> list[dict]:
-    """
-    Frontend руу answer_index-гүй хувилбар явуулна.
-    """
     safe_questions = []
     for q in questions:
         safe_questions.append(
@@ -259,9 +408,6 @@ def sanitize_questions(questions: list[dict]) -> list[dict]:
 
 
 def grade_answers(questions: list[dict], answers: list[int]) -> tuple[int, int, int]:
-    """
-    Backend дээр оноо бодно.
-    """
     total = len(questions)
     correct = 0
 
@@ -375,10 +521,6 @@ def recommended_lessons(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def placement_quiz(request):
-    """
-    Placement test асуулт авах.
-    answer_index frontend рүү буцаахгүй.
-    """
     questions = llm_placement_quiz(num_questions=20)
 
     if not questions:
@@ -398,14 +540,6 @@ def placement_quiz(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def placement_quiz_submit(request):
-    """
-    Placement test submit.
-    Backend дээр score бодоод level хадгална.
-    Body:
-    {
-      "answers": [0,1,2,3,...]
-    }
-    """
     answers = request.data.get("answers", [])
 
     if not isinstance(answers, list):
@@ -451,10 +585,6 @@ def placement_quiz_submit(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def level_up_quiz(request):
-    """
-    Level-up test асуулт авах.
-    answer_index frontend рүү буцаахгүй.
-    """
     user = request.user
     current_level = getattr(user, "skill_level", "beginner")
 
@@ -491,14 +621,6 @@ def level_up_quiz(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def level_up_quiz_submit(request):
-    """
-    Level-up test submit.
-    Backend дээр pass/fail шийдэж level ахиулна.
-    Body:
-    {
-      "answers": [0,1,2,3,...]
-    }
-    """
     answers = request.data.get("answers", [])
 
     if not isinstance(answers, list):
@@ -584,3 +706,81 @@ def ai_chat(request):
 
     except Exception:
         return Response({"reply": "Алдаа гарлаа."})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def run_code(request):
+    if not settings.RUN_CODE_ENABLED:
+        return Response(
+            {"detail": "Code runner is disabled."},
+            status=status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+
+    language = (request.data.get("language") or "").strip().lower()
+    code = request.data.get("code", "")
+
+    if language != "python":
+        return Response(
+            {"detail": "Одоогоор зөвхөн Python дэмжинэ."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not isinstance(code, str) or not code.strip():
+        return Response(
+            {"detail": "Код хоосон байна."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if len(code) > settings.RUN_CODE_MAX_CHARS:
+        return Response(
+            {"detail": "Код хэт урт байна."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        with tempfile.TemporaryDirectory(prefix="lesson-runner-") as temp_dir:
+            temp_path = Path(temp_dir) / "main.py"
+            temp_path.write_text(code, encoding="utf-8")
+
+            result = subprocess.run(
+                [sys.executable, "-I", str(temp_path)],
+                capture_output=True,
+                text=True,
+                timeout=settings.RUN_CODE_TIMEOUT_SECONDS,
+                cwd=temp_dir,
+                env={"PYTHONIOENCODING": "utf-8"},
+                preexec_fn=apply_runner_limits if os.name == "posix" else None,
+            )
+
+        output = truncate_runner_output((result.stdout or "").strip())
+        error = truncate_runner_output((result.stderr or "").strip())
+
+        return Response(
+            {
+                "output": output,
+                "error": error,
+                "exit_code": result.returncode,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    except subprocess.TimeoutExpired:
+        return Response(
+            {
+                "output": "",
+                "error": "Execution timed out. Код хэт удаан ажиллаж байна.",
+                "exit_code": -1,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    except Exception as e:
+        return Response(
+            {
+                "output": "",
+                "error": f"Runner error: {str(e)}",
+                "exit_code": -1,
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

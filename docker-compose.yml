@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:16
@@ -31,7 +29,15 @@ services:
       DB_PASSWORD: elearn
       DB_HOST: db
       DB_PORT: 5432
-
+      DJANGO_DEBUG: "${DJANGO_DEBUG:-1}"
+      DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY:-django-insecure-local-dev-only-change-me}"
+      DJANGO_ALLOWED_HOSTS: "${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0,backend}"
+      CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}"
+      CSRF_TRUSTED_ORIGINS: "${CSRF_TRUSTED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}"
+      RUN_CODE_ENABLED: "${RUN_CODE_ENABLED:-1}"
+      RUN_CODE_TIMEOUT_SECONDS: "${RUN_CODE_TIMEOUT_SECONDS:-3}"
+      RUN_CODE_MAX_CHARS: "${RUN_CODE_MAX_CHARS:-8000}"
+      RUN_CODE_MAX_OUTPUT_CHARS: "${RUN_CODE_MAX_OUTPUT_CHARS:-12000}"
       GEMINI_API_KEY: "${GEMINI_API_KEY}"
 
 volumes:
