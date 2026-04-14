@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getLesson } from "../api/courses";
 import type { Lesson } from "../api/courses";
 import { runPythonCode } from "../api/compiler";
 import { completeLesson, getLessonProgress } from "../api/progress";
@@ -18,6 +17,7 @@ import {
 } from "../api/community";
 import { getApiErrorMessage } from "../api/axios";
 import "../style/lesson-detail.css";
+import { getLesson, toggleLessonLike } from "../api/courses";
 
 type PracticeMode = "python" | "web" | "text";
 
@@ -30,6 +30,8 @@ export default function LessonDetail() {
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [, setProgress] = useState<LessonProgress | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeLoading, setLikeLoading] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -72,6 +74,20 @@ export default function LessonDetail() {
         lesson?.practice_expected_output?.trim()
     );
   }, [lesson]);
+
+  const handleToggleLike = async () => {
+    if (!lesson) return;
+
+    try {
+      setLikeLoading(true);
+      const res = await toggleLessonLike(lesson.id);
+      setLiked(res.liked);
+    } catch (err) {
+      console.error("Toggle like error >>>", err);
+    } finally {
+      setLikeLoading(false);
+    }
+  };
 
   const hasVideo = useMemo(() => {
     return Boolean(lesson?.video_url || lesson?.video_file);
@@ -283,6 +299,7 @@ export default function LessonDetail() {
     ])
       .then(([lessonData, progressData]) => {
         setLesson(lessonData);
+        setLiked(Boolean(lessonData.is_liked));
 
         if (progressData) {
           setProgress(progressData);
@@ -505,6 +522,28 @@ export default function LessonDetail() {
                 Mark as completed
               </button>
             )}
+            <div className="lesson-top-actions">
+              <button
+                type="button"
+                className={`button button-muted ${liked ? "button-like-active" : ""}`}
+                onClick={handleToggleLike}
+                disabled={likeLoading}
+              >
+                {liked ? "♥ Liked" : "♡ Like"}
+              </button>
+
+              {isCompleted ? (
+                <span className="status-pill success">Completed ✓</span>
+              ) : (
+                <button
+                  className="button"
+                  onClick={handleComplete}
+                  disabled={!canMarkDone}
+                >
+                  Mark as completed
+                </button>
+              )}
+            </div>
           </div>
 
           <p className="lesson-content">{lesson.content}</p>

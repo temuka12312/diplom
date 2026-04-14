@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginApi } from "../api/auth";
 import AuthMascot from "../components/AuthMascot";
+import useAuth from "../hooks/useAuth";
 
 type MascotMode =
   | "idle"
@@ -12,6 +13,7 @@ type MascotMode =
 
 export default function Login() {
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +38,8 @@ export default function Login() {
       const data = await loginApi(username, password);
       localStorage.setItem("access_token", data.access);
       localStorage.setItem("refresh_token", data.refresh);
-      navigate("/dashboard");
+      await refreshUser();
+      navigate("/dashboard", { replace: true });
     } catch {
       setError("Нэвтрэх үед алдаа гарлаа.");
     }

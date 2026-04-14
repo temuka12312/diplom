@@ -24,7 +24,10 @@ export const registerApi = async (
 export interface MeResponse {
   id: number;
   username: string;
+  nickname: string;
+  display_name: string;
   email: string;
+  avatar_url?: string | null;
   role: string;
   skill_level: string | null;
   skill_level_display?: string;
@@ -43,5 +46,25 @@ export const meApi = async (): Promise<MeResponse> => {
 
 export const saveLevel = async (level: string) => {
   const res = await api.post("/auth/save-level/", { level });
+  return res.data;
+};
+
+export const updateProfileApi = async (formData: FormData): Promise<MeResponse> => {
+  const res = await api.patch("/auth/profile/", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return res.data;
+};
+
+export const changePasswordApi = async (
+  current_password: string,
+  new_password: string
+) => {
+  const res = await api.post("/auth/change-password/", {
+    current_password,
+    new_password,
+  });
   return res.data;
 };

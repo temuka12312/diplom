@@ -4,6 +4,7 @@ import type { ProgressSummary, CourseProgress } from "../api/progress";
 import { getRecommendations } from "../api/ai";
 import type { RecommendedLesson } from "../api/ai";
 import { Link } from "react-router-dom";
+import LoadingState from "../components/LoadingState";
 import "../style/ProgressSummary.css";
 
 type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
@@ -59,7 +60,16 @@ export default function ProgressSummaryPage() {
     };
   }, [data]);
 
-  if (loading) return <p className="loading-text">Loading progress...</p>;
+  if (loading) {
+    return (
+      <div className="container page-shell">
+        <LoadingState
+          title="Ахиц тооцоолж байна"
+          subtitle="Курс, оноо, recommendation мэдээллийг нэгтгэж байна..."
+        />
+      </div>
+    );
+  }
   if (error) return <p className="error-text">{error}</p>;
   if (!data || !stats) return <p>No data.</p>;
 

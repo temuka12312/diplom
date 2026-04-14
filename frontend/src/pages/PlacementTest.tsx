@@ -1,26 +1,65 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import api, { getApiErrorMessage } from "../api/axios";
 import {
   getPlacementTest,
   submitPlacementTest,
   type PlacementQuestion,
 } from "../api/ai";
+import useAuth from "../hooks/useAuth";
+import LoadingState from "../components/LoadingState";
+import TestResultModal from "../components/TestResultModal";
 
 export default function PlacementTest() {
+  const navigate = useNavigate();
+  const { refreshUser } = useAuth();
+
   const [questions, setQuestions] = useState<PlacementQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [started, setStarted] = useState(false);
   const [error, setError] = useState("");
   const [answers, setAnswers] = useState<Record<number, number | null>>({});
-  const [result, setResult] = useState<string | null>(null);
 
   const [showModal, setShowModal] = useState(false);
-  const [scoreData, setScoreData] = useState<{ correct: number; total: number; percent: number; level: string; } | null>(null);
+  const [scoreData, setScoreData] = useState<{
+    correct: number;
+    total: number;
+    percent: number;
+    level: string;
+  } | null>(null);
 
-  useEffect(() => {
-    getPlacementTest()
-      .then((res) => setQuestions(res.questions || []))
-      .catch(() => setError("Failed to load placement test"))
-      .finally(() => setLoading(false));
-  }, []);
+  const handleStartPlacement = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await getPlacementTest();
+      setQuestions(res.questions || []);
+      setStarted(true);
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, "Failed to load placement test"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStartBeginner = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      await api.post("/auth/save-level/", {
+        level: "beginner",
+      });
+
+      await refreshUser();
+      navigate("/dashboard", { replace: true });
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, "Анхан шат тохируулах үед алдаа гарлаа."));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSelect = (qId: number, optionIndex: number) => {
     setAnswers((prev) => ({ ...prev, [qId]: optionIndex }));
@@ -36,10 +75,6 @@ export default function PlacementTest() {
 
     try {
       const res = await submitPlacementTest(orderedAnswers);
-
-      const message = `Зөв хариулт: ${res.correct}/${res.total} (${res.percent}%).\nТаны түвшин: ${res.level}.`;
-
-      setResult(message);
       setScoreData({
         correct: res.correct,
         total: res.total,
@@ -47,21 +82,69 @@ export default function PlacementTest() {
         level: res.level,
       });
       setShowModal(true);
-    } catch (e) {
-      console.error("Placement test submit error", e);
-      setError("Түвшин хадгалах үед алдаа гарлаа.");
+    } catch (err: unknown) {
+      console.error("Placement test submit error", err);
+      setError(getApiErrorMessage(err, "Түвшин хадгалах үед алдаа гарлаа."));
     }
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = async () => {
     setShowModal(false);
-    window.location.replace("/");
+    await refreshUser();
+    navigate("/dashboard", { replace: true });
   };
+
+  if (!started) {
+    return (
+      <div className="container page-shell">
+        <div className="card" style={{ maxWidth: 780, margin: "0 auto" }}>
+          <div className="page-header">
+            <span className="page-kicker">AI Placement</span>
+            <h1 className="page-title">Түвшин тогтоох</h1>
+            <p className="page-subtitle">
+              Та placement test өгч өөрийн түвшинг автоматаар тодорхойлуулж болно.
+              Эсвэл анхан шатнаас шууд суралцаж эхэлж болно.
+            </p>
+          </div>
+
+          {error && <p className="error-text">{error}</p>}
+
+          <div
+            className="action-row"
+            style={{
+              gap: "12px",
+              flexWrap: "wrap",
+              marginTop: "12px",
+            }}
+          >
+            <button
+              className="button"
+              onClick={handleStartPlacement}
+              disabled={loading}
+            >
+              {loading ? "Ачааллаж байна..." : "Placement test өгөх"}
+            </button>
+
+            <button
+              className="button button-muted"
+              onClick={handleStartBeginner}
+              disabled={loading}
+            >
+              {loading ? "Тохируулж байна..." : "Анхан шатнаас суралцах"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
       <div className="container page-shell">
-        <p className="loading-text">Placement test ачаалж байна...</p>
+        <LoadingState
+          title="Placement test бэлдэж байна"
+          subtitle="Асуултуудыг үүсгэж, шалгалтын орчныг тохируулж байна..."
+        />
       </div>
     );
   }
@@ -123,35 +206,21 @@ export default function PlacementTest() {
         </button>
       </div>
 
-      {result && <p className="result-text">{result}</p>}
-
-      {showModal && scoreData && (
-        <div className="modal-overlay">
-          <div className="modal modal-lg">
-            <h2>Шалгалтын үр дүн</h2>
-
-            <p className="result-stat">
-              Зөв хариулт:{" "}
-              <strong>
-                {scoreData.correct}/{scoreData.total}
-              </strong>{" "}
-              ({scoreData.percent}%)
-            </p>
-
-            <p className="result-level">
-              Таны түвшин: <span className="level-pill">{scoreData.level}</span>
-            </p>
-
-            <p className="modal-note">
-              Энэ түвшингээр тань тохирсон хичээлүүдийг санал болгоно.
-            </p>
-
-            <button className="button" onClick={handleCloseModal}>
-              OK, эхлэл рүү очих
-            </button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showModal && scoreData && (
+          <TestResultModal
+            title="Шалгалтын үр дүн"
+            correct={scoreData.correct}
+            total={scoreData.total}
+            percent={scoreData.percent}
+            levelLabel={scoreData.level}
+            tone="info"
+            message="Энэ түвшинд тань тохирсон хичээлүүдийг систем автоматаар санал болгоно."
+            actionLabel="Dashboard руу очих"
+            onClose={handleCloseModal}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

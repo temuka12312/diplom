@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { getCourse } from "../api/courses";
 import { meApi } from "../api/auth";
 import type { Course, Lesson } from "../api/courses";
+import LoadingState from "../components/LoadingState";
 
 type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
 
@@ -66,7 +67,10 @@ export default function CourseDetail() {
   if (!course) {
     return (
       <div className="container page-shell">
-        <p className="loading-text">Loading course...</p>
+        <LoadingState
+          title="Курс ачаалж байна"
+          subtitle="Хичээлийн бүтэц болон түвшний мэдээллийг бэлдэж байна..."
+        />
       </div>
     );
   }

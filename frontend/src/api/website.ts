@@ -1,5 +1,14 @@
 import api from "./axios";
 
+export interface LandingReview {
+  id: number;
+  name: string;
+  role: string;
+  company: string;
+  review_text: string;
+  rating: number;
+}
+
 export interface LandingContent {
   site_name: string;
   hero_title: string;
@@ -15,6 +24,7 @@ export interface LandingContent {
   slide_image_1: string | null;
   slide_image_2: string | null;
   slide_image_3: string | null;
+  reviews: LandingReview[];
 }
 
 export const getLandingContent = async (): Promise<LandingContent> => {

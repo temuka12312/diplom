@@ -17,7 +17,7 @@ export default function PageFade({ children }: Props) {
         animate={{ opacity: 1, filter: "blur(0px)" }}
         exit={{ opacity: 0, filter: "blur(4px)" }}
         transition={{ duration: 0.5, ease: "easeInOut" }}
-        style={{ width: "100%" }}
+        style={{ width: "100%", overflowX: "clip" }}
       >
         {children}
       </motion.div>

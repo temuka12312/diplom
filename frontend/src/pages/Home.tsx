@@ -1,6 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { getProgressSummary, type ProgressSummary } from "../api/progress";
+import { useEffect, useState } from "react";
+import {
+  getHomeFeed,
+  resolveCourseThumbnail,
+  type HomeFeedResponse,
+  type Course,
+} from "../api/courses";
+import useAuth from "../hooks/useAuth";
+import LoadingState from "../components/LoadingState";
 
 type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
 
@@ -11,41 +18,64 @@ const levelLabels: Record<UserLevel, string> = {
   advanced: "Ахисан",
 };
 
+function CourseTile({ course }: { course: Course }) {
+  const levelText = levelLabels[(course.level as UserLevel) || "beginner"] || "Анхан";
+  const [expanded, setExpanded] = useState(false);
+  const thumbnail = resolveCourseThumbnail(course.thumbnail);
+
+  return (
+    <article className="card home-feed-card">
+      <div className="home-feed-thumbnail">
+        {thumbnail ? (
+          <img src={thumbnail} alt={course.title} />
+        ) : (
+          <div className="home-feed-thumbnail-fallback">{course.track_name || "Course"}</div>
+        )}
+      </div>
+
+      <div className="home-feed-card-top">
+        <span className="badge">{course.track_name || "General"}</span>
+        <span className="level-pill">{levelText}</span>
+      </div>
+
+      <h3>{course.title}</h3>
+      <p className={`home-feed-description ${expanded ? "expanded" : ""}`}>
+        {course.description || "Тухайн чиглэлийн сургалтыг эхлүүлэх курс."}
+      </p>
+      <button
+        type="button"
+        className="show-more"
+        onClick={() => setExpanded((prev) => !prev)}
+      >
+        {expanded ? "show less" : "show more"}
+      </button>
+
+      <div className="home-feed-metrics">
+        <span>{course.lesson_count || course.lessons?.length || 0} lessons</span>
+        <span>{course.learner_count || 0} learners</span>
+        <span>{course.liked_count || 0} likes</span>
+      </div>
+
+      <Link to={`/courses/${course.id}`} className="button">
+        Курс нээх
+      </Link>
+    </article>
+  );
+}
+
 export default function Home() {
-  const [data, setData] = useState<ProgressSummary | null>(null);
+  const { user } = useAuth();
+  const [feed, setFeed] = useState<HomeFeedResponse | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getProgressSummary()
-      .then(setData)
-      .catch(() => setError("Failed to load profile"));
+    getHomeFeed()
+      .then(setFeed)
+      .catch(() => setError("Home feed ачаалж чадсангүй."));
   }, []);
 
-  const stats = useMemo(() => {
-    if (!data) return null;
-
-    const totalCourses = data.courses.length;
-    const completedCourses = data.courses.filter(
-      (c) => c.total_lessons > 0 && c.completed_lessons === c.total_lessons
-    ).length;
-
-    const avgProgress =
-      totalCourses > 0
-        ? Math.round(
-            data.courses.reduce((sum, c) => sum + c.progress_percent, 0) /
-              totalCourses
-          )
-        : 0;
-
-    return {
-      totalCourses,
-      completedCourses,
-      avgProgress,
-    };
-  }, [data]);
-
-  const userLevel = (data?.skill_level as UserLevel) || "beginner";
-  const levelText = levelLabels[userLevel] || "Анхан";
+  const levelText =
+    levelLabels[(user?.skill_level as UserLevel) || "beginner"] || "Анхан";
 
   if (error) {
     return (
@@ -55,130 +85,94 @@ export default function Home() {
     );
   }
 
-  if (!data || !stats) {
+  if (!feed || !user) {
     return (
       <div className="container page-shell">
-        <p className="loading-text">Loading profile...</p>
+        <LoadingState
+          title="Home feed бэлдэж байна"
+          subtitle="Танд тохирсон popular course болон track-уудыг ангилж байна..."
+        />
       </div>
     );
   }
 
   return (
     <div className="container page-shell">
-      <div className="page-header">
-        <span className="page-kicker">Dashboard</span>
-        <h1 className="page-title">Welcome back, {data.username}</h1>
-        <p className="page-subtitle">
-          Таны профайл, ахиц, оноо болон дараагийн алхмууд энд харагдана.
-        </p>
-      </div>
+      <section className="card home-hero-card">
+        <div className="home-hero-copy">
+          <span className="page-kicker">Home</span>
+          <h1 className="page-title">Welcome back, {user.nickname || user.username}</h1>
+          <p className="page-subtitle">
+            Таны түвшин <strong>{levelText}</strong>. Доорх хэсгээс track-уудаар ангилсан
+            popular course-уудыг үзээрэй.
+          </p>
 
-      <div className="home-grid">
-        <div className="card home-profile-card">
-          <h2>Профайлын мэдээлэл</h2>
-
-          <div className="profile-grid">
-            <div className="profile-row">
-              <span>Хэрэглэгч</span>
-              <strong>{data.username}</strong>
-            </div>
-            <div className="profile-row">
-              <span>Имэйл</span>
-              <strong>{data.email}</strong>
-            </div>
-            <div className="profile-row">
-              <span>Эрх</span>
-              <strong>{data.role}</strong>
-            </div>
-            <div className="profile-row">
-              <span>Түвшин</span>
-              <strong>{levelText}</strong>
-            </div>
-            <div className="profile-row">
-              <span>Нийт оноо</span>
-              <strong>{data.total_score}</strong>
-            </div>
-            <div className="profile-row">
-              <span>Дуусгасан хичээл</span>
-              <strong>{data.completed_lessons}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div className="card home-actions-card">
-          <h2>Түргэн үйлдэл</h2>
-          <div className="quick-actions">
-            <Link to="/courses">
-              <button className="button">Курсүүд үзэх</button>
+          <div className="home-hero-actions">
+            <Link to="/profile" className="button">
+              Profile нээх
             </Link>
-
-            <Link to="/progress">
-              <button className="button button-muted">Ахиц харах</button>
+            <Link to="/courses" className="button button-muted">
+              Бүх курс
             </Link>
-
-            {userLevel !== "advanced" && (
-              <Link to="/level-up-test">
-                <button className="button">Түвшин ахиулах тест</button>
-              </Link>
-            )}
           </div>
         </div>
-      </div>
 
-      <div className="home-stats-grid">
-        <div className="card stat-card">
-          <div className="profile-grid">
-            <div className="profile-row">
-              <span className="stat-label">Нийт курс: </span>
-              <strong className="stat-value">{stats.totalCourses}</strong>
+        <div className="home-hero-stats">
+          <div className="home-stat-panel">
+            <span>Түвшин</span>
+            <strong>{levelText}</strong>
+          </div>
+          <div className="home-stat-panel">
+            <span>Оноо</span>
+            <strong>{user.total_score}</strong>
+          </div>
+          <div className="home-stat-panel">
+            <span>Дуусгасан хичээл</span>
+            <strong>{user.completed_lessons}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section">
+        <div className="section-head">
+          <div>
+            <span className="page-kicker">Featured</span>
+            <h2>Хамгийн их үзэлттэй course-ууд</h2>
+          </div>
+          <Link to="/courses" className="button button-muted">
+            Бүгдийг харах
+          </Link>
+        </div>
+
+        <div className="home-feed-grid">
+          {feed.featured_courses.map((course) => (
+            <CourseTile key={course.id} course={course} />
+          ))}
+        </div>
+      </section>
+
+      {feed.track_sections.map((section) => (
+        <section key={section.id} className="home-section">
+          <div className="section-head">
+            <div>
+              <span className="page-kicker">{section.name}</span>
+              <h2>{section.name} track</h2>
+              <p className="page-subtitle">
+                {section.description || "Энэ чиглэлийн хамгийн идэвхтэй course-ууд."}
+              </p>
             </div>
-            <div className="profile-row">
-              <span className="stat-label">Дуусгасан курс: </span>
-              <strong className="stat-value">{stats.completedCourses}</strong>
-            </div>
+            <Link to="/tracks" className="button button-muted">
+              Track-ууд
+            </Link>
           </div>
-        </div>
-        <div className="card stat-card">
-          <span className="stat-label">Дундаж ахиц: </span>
-          <strong className="stat-value">{stats.avgProgress}%</strong>
-          <div className="progress-bar-wrapper compact">
-            <div
-              className="progress-bar-fill"
-              style={{ width: `${stats.avgProgress}%` }}
-            />
-          </div>
-        </div>
-      </div>
 
-      <div className="card">
-        <h2>Курсийн явц</h2>
-
-        {data.courses.length === 0 ? (
-          <p>Одоогоор курс алга.</p>
-        ) : (
-          <div className="home-course-list">
-            {data.courses.map((c) => (
-              <div key={c.course_id} className="home-course-item">
-                <div className="home-course-top">
-                  <strong>{c.course_title}</strong>
-                  <span>{c.progress_percent}%</span>
-                </div>
-
-                <div className="progress-bar-wrapper">
-                  <div
-                    className="progress-bar-fill"
-                    style={{ width: `${c.progress_percent}%` }}
-                  />
-                </div>
-
-                <small>
-                  {c.completed_lessons}/{c.total_lessons} хичээл дууссан
-                </small>
-              </div>
+          <div className="home-feed-grid">
+            {section.courses.map((course) => (
+              <CourseTile key={`${section.id}-${course.id}`} course={course} />
             ))}
           </div>
-        )}
-      </div>
+        </section>
+      ))}
     </div>
   );
 }

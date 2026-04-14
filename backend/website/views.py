@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .models import LandingPageContent
+from .models import LandingPageContent, LandingPageReview
 from .serializers import LandingPageContentSerializer
 
 
@@ -10,6 +10,9 @@ from .serializers import LandingPageContentSerializer
 @permission_classes([AllowAny])
 def landing_content(request):
     obj = LandingPageContent.objects.first()
+    reviews = LandingPageReview.objects.filter(is_active=True).order_by(
+        "sort_order", "-created_at"
+    )
 
     if not obj:
         return Response(
@@ -28,6 +31,17 @@ def landing_content(request):
                 "slide_image_1": None,
                 "slide_image_2": None,
                 "slide_image_3": None,
+                "reviews": [
+                    {
+                        "id": review.id,
+                        "name": review.name,
+                        "role": review.role,
+                        "company": review.company,
+                        "review_text": review.review_text,
+                        "rating": review.rating,
+                    }
+                    for review in reviews
+                ],
             }
         )
 

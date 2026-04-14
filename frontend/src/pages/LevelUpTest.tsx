@@ -1,18 +1,25 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   getLevelUpTest,
   submitLevelUpTest,
   type QuizQuestion,
 } from "../api/ai";
+import useAuth from "../hooks/useAuth";
+import LoadingState from "../components/LoadingState";
+import TestResultModal from "../components/TestResultModal";
 
 export default function LevelUpTest() {
+  const navigate = useNavigate();
+  const { refreshUser } = useAuth();
+
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentLevel, setCurrentLevel] = useState("");
   const [nextLevel, setNextLevel] = useState("");
   const [answers, setAnswers] = useState<Record<number, number | null>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [result, setResult] = useState<string | null>(null);
 
   const [showModal, setShowModal] = useState(false);
   const [passed, setPassed] = useState(false);
@@ -57,8 +64,6 @@ export default function LevelUpTest() {
         total: res.total,
         percent: res.percent,
       });
-
-      setResult(res.message);
       setShowModal(true);
     } catch (e) {
       console.error("Level-up submit error", e);
@@ -66,15 +71,19 @@ export default function LevelUpTest() {
     }
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = async () => {
     setShowModal(false);
-    window.location.replace("/progress");
+    await refreshUser();
+    navigate("/progress", { replace: true });
   };
 
   if (loading) {
     return (
       <div className="container page-shell">
-        <p className="loading-text">Level-up test ачаалж байна...</p>
+        <LoadingState
+          title="Level-up test бэлдэж байна"
+          subtitle="Таны дараагийн түвшний шалгалтыг ачаалж байна..."
+        />
       </div>
     );
   }
@@ -149,38 +158,25 @@ export default function LevelUpTest() {
         </button>
       </div>
 
-      {result && <p className="result-text">{result}</p>}
-
-      {showModal && scoreData && (
-        <div className="modal-overlay">
-          <div className="modal modal-lg">
-            <div className="result-icon">{passed ? "🎉" : "📘"}</div>
-            <h2>Level-Up Test Result</h2>
-
-            <p className="result-stat">
-              Зөв хариулт:{" "}
-              <strong>
-                {scoreData.correct}/{scoreData.total}
-              </strong>{" "}
-              ({scoreData.percent}%)
-            </p>
-
-            {passed ? (
-              <p className="success-text">
-                Congratulations! Your new level is <strong>{nextLevel}</strong>.
-              </p>
-            ) : (
-              <p className="warning-text">
-                Та энэ удаа тэнцсэнгүй. Хичээлээ давтаад дахин оролдоно уу.
-              </p>
-            )}
-
-            <button className="button" onClick={handleCloseModal}>
-              OK, Back to Progress
-            </button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showModal && scoreData && (
+          <TestResultModal
+            title="Level-Up Test Result"
+            correct={scoreData.correct}
+            total={scoreData.total}
+            percent={scoreData.percent}
+            levelLabel={passed ? nextLevel : currentLevel}
+            tone={passed ? "success" : "warning"}
+            message={
+              passed
+                ? `Гоё. Та дараагийн ${nextLevel} түвшин рүү амжилттай ахилаа.`
+                : "Та энэ удаа тэнцсэнгүй. Хичээлээ давтаад дахин оролдоно уу."
+            }
+            actionLabel="Progress руу буцах"
+            onClose={handleCloseModal}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

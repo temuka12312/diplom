@@ -9,6 +9,7 @@ class CustomUserAdmin(UserAdmin):
 
     list_display = (
         "username",
+        "display_name",
         "email",
         "role",
         "skill_level",
@@ -31,6 +32,8 @@ class CustomUserAdmin(UserAdmin):
             "Learning Info",
             {
                 "fields": (
+                    "display_name",
+                    "avatar",
                     "role",
                     "skill_level",
                     "has_placement_test",
@@ -47,6 +50,8 @@ class CustomUserAdmin(UserAdmin):
             "Learning Info",
             {
                 "fields": (
+                    "display_name",
+                    "avatar",
                     "role",
                     "skill_level",
                     "has_placement_test",

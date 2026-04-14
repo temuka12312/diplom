@@ -1,11 +1,14 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
 import LandingPage from "../pages/LandingPage";
 import Home from "../pages/Home";
+import Profile from "../pages/Profile";
+import MyLearning from "../pages/MyLearning";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import Courses from "../pages/Courses";
 import CourseDetail from "../pages/CourseDetail";
+import LikedLessons from "../pages/LikedLessons";
 import LessonDetail from "../pages/LessonDetail";
 import ProgressSummaryPage from "../pages/ProgressSummary";
 import PlacementTest from "../pages/PlacementTest";
@@ -21,6 +24,9 @@ import ProtectedRoute from "./ProtectedRoute";
 import PageFade from "../components/PageFade";
 
 function Layout() {
+  const location = useLocation();
+  const showChatWidget = location.pathname !== "/";
+
   return (
     <>
       <Routes>
@@ -72,6 +78,17 @@ function Layout() {
             <ProtectedRoute>
               <DashboardLayout>
                 <Courses />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/my-learning"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <MyLearning />
               </DashboardLayout>
             </ProtectedRoute>
           }
@@ -133,6 +150,17 @@ function Layout() {
         />
 
         <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <Profile />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/placement-test"
           element={
             <ProtectedRoute>
@@ -164,9 +192,18 @@ function Layout() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/liked-lessons"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <LikedLessons />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-
-      <ChatWidget />
+      {showChatWidget && <ChatWidget />}
     </>
   );
 }

@@ -585,3 +585,15 @@
     grid-template-columns: 1fr;
   }
 }
+.lesson-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.button-like-active {
+  background: rgba(244, 63, 94, 0.18);
+  color: #fecdd3;
+  border: 1px solid rgba(244, 63, 94, 0.32);
+}

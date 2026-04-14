@@ -44,3 +44,22 @@ class LandingPageContent(models.Model):
 
     def __str__(self):
         return self.site_name
+
+
+class LandingPageReview(models.Model):
+    name = models.CharField(max_length=120)
+    role = models.CharField(max_length=160, blank=True)
+    company = models.CharField(max_length=160, blank=True)
+    review_text = models.TextField()
+    rating = models.PositiveSmallIntegerField(default=5)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("sort_order", "-created_at")
+        verbose_name = "Landing Page Review"
+        verbose_name_plural = "Landing Page Reviews"
+
+    def __str__(self):
+        return f"{self.name} ({self.rating}/5)"

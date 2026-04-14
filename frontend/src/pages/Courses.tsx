@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getCourses, getMyLevelCourses } from "../api/courses";
+import { getCourses, getMyLevelCourses, resolveCourseThumbnail } from "../api/courses";
 import { meApi } from "../api/auth";
 import type { Course } from "../api/courses";
 import "../style/courses.css";
@@ -111,6 +111,16 @@ export default function Courses() {
                 key={course.id}
                 className={`card course-card ${locked ? "course-card-locked" : ""}`}
               >
+                <div className="course-card-thumbnail">
+                  {resolveCourseThumbnail(course.thumbnail) ? (
+                    <img src={resolveCourseThumbnail(course.thumbnail) || ""} alt={course.title} />
+                  ) : (
+                    <div className="course-card-thumbnail-fallback">
+                      {course.track_name || "Course"}
+                    </div>
+                  )}
+                </div>
+
                 <div className="course-card-head">
                   <h2 className="course-title">
                     {locked ? (
@@ -134,6 +144,7 @@ export default function Courses() {
                 </p>
 
                 <button
+                  type="button"
                   className="show-more"
                   onClick={() =>
                     setExpanded(expanded === course.id ? null : course.id)

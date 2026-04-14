@@ -6,6 +6,7 @@ import {
   type CommunityPost,
 } from "../api/community";
 import { getApiErrorMessage } from "../api/axios";
+import LoadingState from "../components/LoadingState";
 
 export default function Community() {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
@@ -66,7 +67,14 @@ export default function Community() {
   };
 
   if (loading) {
-    return <div className="container page-shell"><p>Loading community...</p></div>;
+    return (
+      <div className="container page-shell">
+        <LoadingState
+          title="Community ачаалж байна"
+          subtitle="Нийтлэл, хэлэлцүүлгийг татаж байна..."
+        />
+      </div>
+    );
   }
 
   return (

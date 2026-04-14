@@ -14,12 +14,18 @@ from django.contrib.auth.hashers import make_password
 
 from rest_framework import generics
 
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
-from .serializers import RegisterSerializer, UserSerializer
+from .serializers import (
+    RegisterSerializer,
+    UserSerializer,
+    ProfileUpdateSerializer,
+    ChangePasswordSerializer,
+)
 from .models import User
 
 @api_view(["POST"])
@@ -34,7 +40,7 @@ def register(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def me(request):
-    serializer = UserSerializer(request.user)
+    serializer = UserSerializer(request.user, context={"request": request})
     return Response(serializer.data)
 
 
@@ -64,3 +70,34 @@ def save_level(request):
         },
         status=200,
     )
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
+def update_profile(request):
+    serializer = ProfileUpdateSerializer(
+        request.user,
+        data=request.data,
+        partial=True,
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+
+    return Response(UserSerializer(request.user, context={"request": request}).data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    serializer = ChangePasswordSerializer(
+        data=request.data,
+        context={"request": request},
+    )
+    serializer.is_valid(raise_exception=True)
+
+    user: User = request.user
+    user.set_password(serializer.validated_data["new_password"])
+    user.save(update_fields=["password"])
+
+    return Response({"detail": "Password updated successfully."}, status=200)

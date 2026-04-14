@@ -19,6 +19,21 @@ class CourseAdmin(admin.ModelAdmin):
     list_filter = ("track", "level")
     search_fields = ("title", "description")
     inlines = [LessonInline]
+    fieldsets = (
+        (
+            None,
+            {
+                "fields": (
+                    "track",
+                    "title",
+                    "description",
+                    "thumbnail",
+                    "level",
+                    "created_by",
+                )
+            },
+        ),
+    )
 
 
 @admin.register(Lesson)

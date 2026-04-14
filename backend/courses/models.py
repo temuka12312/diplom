@@ -34,6 +34,11 @@ class Course(models.Model):
     )
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
+    thumbnail = models.ImageField(
+        upload_to="courses/thumbnails/",
+        null=True,
+        blank=True,
+    )
     level = models.CharField(
         max_length=20,
         choices=LEVEL_CHOICES,
@@ -94,3 +99,24 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class LikedLesson(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="liked_lessons",
+    )
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="liked_by_users",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "lesson")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user} likes {self.lesson}"

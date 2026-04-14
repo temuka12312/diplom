@@ -18,6 +18,8 @@ class User(AbstractUser):
     )
 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="student")
+    display_name = models.CharField(max_length=120, blank=True, default="")
+    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
 
     skill_level = models.CharField(
         max_length=20,

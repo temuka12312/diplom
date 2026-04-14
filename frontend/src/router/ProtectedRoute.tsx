@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import React from "react";
 import useAuth from "../hooks/useAuth";
+import LoadingState from "../components/LoadingState";
 
 interface Props {
   children: React.ReactNode;
@@ -10,7 +11,9 @@ export default function ProtectedRoute({ children }: Props) {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) {
+    return <LoadingState title="Нэвтрэлт шалгаж байна" subtitle="Түр хүлээнэ үү..." compact />;
+  }
 
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
@@ -23,7 +26,7 @@ export default function ProtectedRoute({ children }: Props) {
   }
 
   if (user.has_placement_test && onPlacementPage) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
