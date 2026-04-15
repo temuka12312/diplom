@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API_ORIGIN } from "../api/axios";
+import { API_ORIGIN, getApiErrorMessage } from "../api/axios";
 import {
   changePasswordApi,
   updateProfileApi,
@@ -7,6 +7,7 @@ import {
 import { getProgressSummary, type ProgressSummary } from "../api/progress";
 import useAuth from "../hooks/useAuth";
 import LoadingState from "../components/LoadingState";
+import "../style/profile.css";
 
 function resolveMediaUrl(image?: string | null) {
   if (!image) return null;
@@ -90,8 +91,8 @@ export default function Profile() {
       setProfileMessage("Профайл амжилттай шинэчлэгдлээ.");
       setAvatarFile(null);
       await refreshUser();
-    } catch {
-      setError("Профайл шинэчлэх үед алдаа гарлаа.");
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, "Профайл шинэчлэх үед алдаа гарлаа."));
     }
   };
 
@@ -104,8 +105,8 @@ export default function Profile() {
       await changePasswordApi(passwords.current_password, passwords.new_password);
       setPasswordMessage("Нууц үг амжилттай солигдлоо.");
       setPasswords({ current_password: "", new_password: "" });
-    } catch {
-      setError("Нууц үг солих үед алдаа гарлаа.");
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, "Нууц үг солих үед алдаа гарлаа."));
     }
   };
 
@@ -121,14 +122,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="container page-shell">
-      <div className="page-header">
-        <span className="page-kicker">Profile</span>
-        <h1 className="page-title">Таны profile</h1>
-        <p className="page-subtitle">
-          Зураг, nickname, login мэдээлэл болон account тохиргоогоо эндээс өөрчилнө.
-        </p>
-      </div>
+    <div className="container page-shell profile-page">
 
       {(error || profileMessage || passwordMessage) && (
         <p className={`profile-feedback ${error ? "error" : "success"}`}>
