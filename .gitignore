@@ -1,14 +1,29 @@
+# Local tooling
+.codex/
+.DS_Store
+
 # Environment files
 .env
 .env.*
 !.env.example
 
-# Dependencies and build output
-node_modules
-dist
-dist-ssr
-__pycache__/
+# Python
+env/
+.venv/
+venv/
+**/__pycache__/
 *.py[cod]
+*.sqlite3
+backend/db.sqlite3
+backend/media/
+
+# Node / frontend build output
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+dist-ssr/
+coverage/
 
 # Logs
 logs
@@ -22,8 +37,7 @@ lerna-debug.log*
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
