@@ -69,7 +69,7 @@ export default function Register() {
               onChange={(e) => setUsername(e.target.value)}
               onFocus={() => setFocusedField("username")}
               onBlur={() => setFocusedField(null)}
-              placeholder="temuulen"
+              placeholder="enter your name"
             />
           </div>
 

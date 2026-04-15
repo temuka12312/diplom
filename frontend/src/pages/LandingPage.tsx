@@ -1,10 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { API_ORIGIN } from "../api/axios";
+import { API_ORIGIN, getApiErrorMessage } from "../api/axios";
 import { getLandingContent, type LandingContent } from "../api/website";
 import { isAuthenticated } from "../hooks/useAuth";
 import LoadingState from "../components/LoadingState";
 import "../style/landing.css";
+
+const fallbackContent: LandingContent = {
+  site_name: "LOTUS Learn",
+  hero_title: "AI-Based Learning Platform",
+  hero_subtitle: "Хиймэл оюунд суурилсан шатлалтай сургалтын систем.",
+  about_title: "Системийн тухай",
+  about_text:
+    "Энэхүү систем нь суралцагчийн түвшин, ахиц, сонирхолд тулгуурлан сургалтын материалыг илүү үр дүнтэй хүргэх зорилготой.",
+  feature_1_title: "AI Summary",
+  feature_1_text: "Хичээлийн агуулгыг товч бөгөөд ойлгомжтой хураангуйлна.",
+  feature_2_title: "Adaptive Learning",
+  feature_2_text: "Хэрэглэгчийн түвшинд тохирсон сургалтын зам санал болгоно.",
+  feature_3_title: "Community",
+  feature_3_text: "Хэрэглэгчид хоорондоо хичээлтэй холбоотой санал бодлоо солилцоно.",
+  slide_image_1: null,
+  slide_image_2: null,
+  slide_image_3: null,
+  reviews: [],
+};
 
 const fallbackSlides = [
   "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
@@ -30,10 +49,20 @@ export default function LandingPage() {
   const [data, setData] = useState<LandingContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     getLandingContent()
       .then(setData)
+      .catch((error) => {
+        setData(fallbackContent);
+        setError(
+          getApiErrorMessage(
+            error,
+            "Нүүр хуудасны өгөгдлийг серверээс авч чадсангүй."
+          )
+        );
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -92,8 +121,10 @@ export default function LandingPage() {
       <section className="landing-hero">
         <div className="landing-hero-left">
           <span className="landing-badge">AI E-Learning Platform</span>
-          <h1>{data?.hero_title}</h1>
-          <p>{data?.hero_subtitle}</p>
+          <h1>{data?.hero_title || fallbackContent.hero_title}</h1>
+          <p>{data?.hero_subtitle || fallbackContent.hero_subtitle}</p>
+
+          {error ? <p className="landing-error-note">{error}</p> : null}
 
           <div className="landing-hero-actions">
             <Link to="/register" className="landing-btn landing-btn-primary">
@@ -106,18 +137,18 @@ export default function LandingPage() {
 
           <div className="landing-features">
             <div className="landing-feature-card">
-              <h3>{data?.feature_1_title}</h3>
-              <p>{data?.feature_1_text}</p>
+              <h3>{data?.feature_1_title || fallbackContent.feature_1_title}</h3>
+              <p>{data?.feature_1_text || fallbackContent.feature_1_text}</p>
             </div>
 
             <div className="landing-feature-card">
-              <h3>{data?.feature_2_title}</h3>
-              <p>{data?.feature_2_text}</p>
+              <h3>{data?.feature_2_title || fallbackContent.feature_2_title}</h3>
+              <p>{data?.feature_2_text || fallbackContent.feature_2_text}</p>
             </div>
 
             <div className="landing-feature-card">
-              <h3>{data?.feature_3_title}</h3>
-              <p>{data?.feature_3_text}</p>
+              <h3>{data?.feature_3_title || fallbackContent.feature_3_title}</h3>
+              <p>{data?.feature_3_text || fallbackContent.feature_3_text}</p>
             </div>
           </div>
         </div>
@@ -138,8 +169,8 @@ export default function LandingPage() {
 
       <section className="landing-about">
         <div className="landing-about-card">
-          <h2>{data?.about_title}</h2>
-          <p>{data?.about_text}</p>
+          <h2>{data?.about_title || fallbackContent.about_title}</h2>
+          <p>{data?.about_text || fallbackContent.about_text}</p>
         </div>
       </section>
 

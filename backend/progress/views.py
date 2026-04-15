@@ -1,5 +1,8 @@
+from datetime import timedelta, date
+
 from django.utils import timezone
 from django.db import models
+from django.db.models.functions import TruncDate
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -93,6 +96,8 @@ def complete_lesson(request, lesson_id):
 @permission_classes([IsAuthenticated])
 def progress_summary(request):
     user = request.user
+    today = date.today()
+    seven_days_ago = today - timedelta(days=6)
 
     data = {
         "username": user.username,
@@ -102,6 +107,35 @@ def progress_summary(request):
         "total_score": getattr(user, "total_score", 0),
         "completed_lessons": getattr(user, "completed_lessons", 0),
     }
+
+    daily_activity = (
+        LessonProgress.objects.filter(
+            user=user,
+            is_completed=True,
+            completed_at__date__gte=seven_days_ago,
+        )
+        .annotate(day=TruncDate("completed_at"))
+        .values("day")
+        .annotate(lesson_count=models.Count("id"))
+        .order_by("day")
+    )
+
+    activity_map = {
+        item["day"]: item["lesson_count"]
+        for item in daily_activity
+    }
+
+    data["weekly_activity"] = [
+        {
+            "date": day.isoformat(),
+            "label": day.strftime("%a"),
+            "lesson_count": activity_map.get(day, 0),
+        }
+        for day in (
+            seven_days_ago + timedelta(days=offset)
+            for offset in range(7)
+        )
+    ]
 
     courses = []
     for course in Course.objects.all():

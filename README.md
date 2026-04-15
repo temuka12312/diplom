@@ -29,3 +29,5 @@ VITE_API_BASE_URL=https://api.example.com/api
 ```
 
 Domain холбох хүртэл local дээр ажиллуулах бол `DJANGO_DEBUG=1`, `VITE_API_BASE_URL=http://localhost:8000/api` гэж тавина.
+
+Local dev үед Vite нь `5173` завгүй бол `5174` дээр асдаг. Тиймээс backend `.env` дээр `CORS_ALLOWED_ORIGINS` болон `CSRF_TRUSTED_ORIGINS` дотор `http://localhost:5173`, `http://127.0.0.1:5173`, `http://localhost:5174`, `http://127.0.0.1:5174`-ийг заавал оруул.

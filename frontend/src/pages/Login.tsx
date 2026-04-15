@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginApi } from "../api/auth";
+import { getApiErrorMessage } from "../api/axios";
 import AuthMascot from "../components/AuthMascot";
 import useAuth from "../hooks/useAuth";
 
@@ -40,8 +41,8 @@ export default function Login() {
       localStorage.setItem("refresh_token", data.refresh);
       await refreshUser();
       navigate("/dashboard", { replace: true });
-    } catch {
-      setError("Нэвтрэх үед алдаа гарлаа.");
+    } catch (error) {
+      setError(getApiErrorMessage(error, "Нэвтрэх үед алдаа гарлаа."));
     }
   };
 

@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { getProgressSummary } from "../api/progress";
-import type { ProgressSummary, CourseProgress } from "../api/progress";
+import type {
+  ProgressSummary,
+  CourseProgress,
+  WeeklyActivity,
+} from "../api/progress";
 import { getRecommendations } from "../api/ai";
 import type { RecommendedLesson } from "../api/ai";
 import { Link } from "react-router-dom";
@@ -15,6 +19,57 @@ const levelLabels: Record<UserLevel, string> = {
   intermediate: "Дунд",
   advanced: "Ахисан",
 };
+
+function WeeklyActivityChart({ activity }: { activity: WeeklyActivity[] }) {
+  const maxCount = Math.max(...activity.map((item) => item.lesson_count), 1);
+  const totalLessons = activity.reduce((sum, item) => sum + item.lesson_count, 0);
+  const activeDays = activity.filter((item) => item.lesson_count > 0).length;
+
+  return (
+    <section className="card weekly-activity-card">
+      <div className="weekly-activity-head">
+        <div>
+          <span className="page-kicker">Last 7 Days</span>
+          <h2>Хичээл үзсэн идэвх</h2>
+          <p className="page-subtitle">
+            Сүүлийн 7 хоногт өдөр бүр хэдэн lesson дуусгасныг харуулна.
+          </p>
+        </div>
+
+        <div className="weekly-activity-summary">
+          <div className="weekly-summary-pill">
+            <strong>{totalLessons}</strong>
+            <span>lesson</span>
+          </div>
+          <div className="weekly-summary-pill">
+            <strong>{activeDays}</strong>
+            <span>active day</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="weekly-chart">
+        {activity.map((item) => {
+          const height = `${Math.max((item.lesson_count / maxCount) * 100, item.lesson_count > 0 ? 16 : 6)}%`;
+
+          return (
+            <div key={item.date} className="weekly-chart-col">
+              <span className="weekly-chart-value">{item.lesson_count}</span>
+              <div className="weekly-chart-track">
+                <div
+                  className="weekly-chart-bar"
+                  style={{ height }}
+                  title={`${item.label}: ${item.lesson_count} lesson`}
+                />
+              </div>
+              <span className="weekly-chart-label">{item.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
 
 export default function ProgressSummaryPage() {
   const [data, setData] = useState<ProgressSummary | null>(null);
@@ -168,6 +223,8 @@ export default function ProgressSummaryPage() {
           </div>
         </section>
       </div>
+
+      <WeeklyActivityChart activity={data.weekly_activity ?? []} />
 
       <section className="card courses-section">
         <h2>Courses</h2>

@@ -26,6 +26,9 @@ api.interceptors.request.use((config) => {
 interface ApiErrorData {
   moderation_reason?: string;
   detail?: string;
+  username?: string[];
+  password?: string[];
+  non_field_errors?: string[];
 }
 
 export const getApiErrorMessage = (error: unknown, fallback: string) => {
@@ -33,7 +36,14 @@ export const getApiErrorMessage = (error: unknown, fallback: string) => {
     return fallback;
   }
 
+  if (error.request && !error.response) {
+    return "API сервертэй холбогдож чадсангүй. Backend ажиллаж байгаа эсэх болон CORS тохиргоогоо шалгана уу.";
+  }
+
   return (
+    error.response?.data?.non_field_errors?.[0] ||
+    error.response?.data?.username?.[0] ||
+    error.response?.data?.password?.[0] ||
     error.response?.data?.moderation_reason ||
     error.response?.data?.detail ||
     fallback

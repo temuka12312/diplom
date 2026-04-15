@@ -17,6 +17,12 @@ export interface CourseProgress {
   course_score: number;
 }
 
+export interface WeeklyActivity {
+  date: string;
+  label: string;
+  lesson_count: number;
+}
+
 export const getLessonProgress = async (
   lessonId: number | string
 ): Promise<LessonProgress> => {
@@ -42,6 +48,7 @@ export interface ProgressSummary {
   total_score: number;
   completed_lessons: number;
   courses: CourseProgress[];
+  weekly_activity: WeeklyActivity[];
 }
 
 export const getProgressSummary = async (): Promise<ProgressSummary> => {

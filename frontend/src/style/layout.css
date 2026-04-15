@@ -445,19 +445,18 @@
 }
 
 .header-user {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 15px;
-  border-radius: 999px;
-  border: 1px solid #cadef2;
-  background: rgba(255, 255, 255, 0.92);
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.92);
-  color: #426587;
-  font-weight: 700;
-  font-size: 13.5px;
-  box-shadow: 0 4px 10px rgba(125, 164, 210, 0.08);
+      display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 15px;
+    border-radius: 999px;
+    border: 1px solid #007fff;
+    cursor: pointer;
+    background: rgb(255 255 255 / 11%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13.5px;
+    box-shadow: 0 4px 10px rgba(125, 164, 210, 0.08);
 }
 
 .header-profile-menu {

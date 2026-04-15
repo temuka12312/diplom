@@ -10,6 +10,7 @@ import {
 import useAuth from "../hooks/useAuth";
 import LoadingState from "../components/LoadingState";
 import TestResultModal from "../components/TestResultModal";
+import "../style/test.css";
 
 export default function PlacementTest() {
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ export default function PlacementTest() {
     percent: number;
     level: string;
   } | null>(null);
+
+  const answeredCount = questions.filter((q) => answers[q.id] !== null && answers[q.id] !== undefined).length;
 
   const handleStartPlacement = async () => {
     try {
@@ -96,44 +99,68 @@ export default function PlacementTest() {
 
   if (!started) {
     return (
-      <div className="container page-shell">
-        <div className="card" style={{ maxWidth: 780, margin: "0 auto" }}>
-          <div className="page-header">
-            <span className="page-kicker">AI Placement</span>
-            <h1 className="page-title">Түвшин тогтоох</h1>
-            <p className="page-subtitle">
-              Та placement test өгч өөрийн түвшинг автоматаар тодорхойлуулж болно.
-              Эсвэл анхан шатнаас шууд суралцаж эхэлж болно.
+      <div className="container page-shell placement-page">
+        <section className="card placement-hero-card">
+          <div className="placement-hero-copy">
+            <div className="page-header placement-hero-header">
+              <span className="page-kicker">AI Placement</span>
+              <h1 className="page-title">Түвшин тогтоох</h1>
+              <p className="page-subtitle">
+                Богино шалгалт өгөөд өөрийн одоогийн түвшинд тохирсон сургалтын замаа
+                автоматаар авна. Хэрэв хүсвэл анхан шатнаас шууд эхлэх боломжтой.
+              </p>
+            </div>
+
+            <div className="placement-chip-list" aria-hidden="true">
+              <span className="placement-chip">AI үнэлгээ</span>
+              <span className="placement-chip">5-7 минут</span>
+              <span className="placement-chip">Хувийн learning path</span>
+            </div>
+
+            {error && <p className="error-text">{error}</p>}
+
+            <div className="action-row placement-action-row">
+              <button
+                className="button placement-primary-button"
+                onClick={handleStartPlacement}
+                disabled={loading}
+              >
+                {loading ? "Ачааллаж байна..." : "Placement test өгөх"}
+              </button>
+
+              <button
+                className="button button-muted"
+                onClick={handleStartBeginner}
+                disabled={loading}
+              >
+                {loading ? "Тохируулж байна..." : "Анхан шатнаас суралцах"}
+              </button>
+            </div>
+
+            <p className="placement-helper-text">
+              Шалгалтын дараа систем таны түвшинд таарсан курс, lesson-уудыг санал болгоно.
             </p>
           </div>
 
-          {error && <p className="error-text">{error}</p>}
-
-          <div
-            className="action-row"
-            style={{
-              gap: "12px",
-              flexWrap: "wrap",
-              marginTop: "12px",
-            }}
-          >
-            <button
-              className="button"
-              onClick={handleStartPlacement}
-              disabled={loading}
-            >
-              {loading ? "Ачааллаж байна..." : "Placement test өгөх"}
-            </button>
-
-            <button
-              className="button button-muted"
-              onClick={handleStartBeginner}
-              disabled={loading}
-            >
-              {loading ? "Тохируулж байна..." : "Анхан шатнаас суралцах"}
-            </button>
+          <div className="placement-hero-panel">
+            <div className="placement-panel-glow" aria-hidden="true" />
+            <div className="placement-metric-card">
+              <span>Үр дүн</span>
+              <strong>Тохирсон түвшин</strong>
+              <p>Beginner, Elementary, Intermediate, Advanced ангиллаас автоматаар сонгоно.</p>
+            </div>
+            <div className="placement-metric-grid">
+              <div className="placement-mini-stat">
+                <strong>Adaptive</strong>
+                <span>AI-аар бэлтгэсэн асуултууд</span>
+              </div>
+              <div className="placement-mini-stat">
+                <strong>Instant</strong>
+                <span>Шууд үнэлж dashboard руу шилжүүлнэ</span>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     );
   }
@@ -166,26 +193,52 @@ export default function PlacementTest() {
   }
 
   return (
-    <div className="container page-shell">
-      <div className="page-header">
-        <span className="page-kicker">AI Placement</span>
-        <h1 className="page-title">Түвшин тогтоох шалгалт</h1>
-        <p className="page-subtitle">
-          Доорх асуултуудад хариулаад өөрийн түвшинг тогтоолгоно уу.
-        </p>
-      </div>
+    <div className="container page-shell placement-page">
+      <section className="card placement-quiz-hero">
+        <div className="placement-quiz-copy">
+          <span className="page-kicker">AI Placement</span>
+          <h1 className="page-title">Түвшин тогтоох шалгалт</h1>
+          <p className="page-subtitle">
+            Доорх асуултуудад хариулаад өөрийн түвшинг тогтоолгоно уу.
+          </p>
+        </div>
 
-      {questions.map((q) => (
+        <div className="placement-quiz-stats">
+          <div className="placement-quiz-stat">
+            <span>Нийт асуулт</span>
+            <strong>{questions.length}</strong>
+          </div>
+          <div className="placement-quiz-stat">
+            <span>Хариулсан</span>
+            <strong>{answeredCount}</strong>
+          </div>
+          <div className="placement-quiz-stat">
+            <span>Явц</span>
+            <strong>{Math.round((answeredCount / questions.length) * 100)}%</strong>
+          </div>
+        </div>
+
+        <div className="placement-progress">
+          <span
+            className="placement-progress-bar"
+            style={{ width: `${(answeredCount / questions.length) * 100}%` }}
+          />
+        </div>
+      </section>
+
+      {questions.map((q, questionIndex) => (
         <div key={q.id} className="card test-card">
           <p className="question-title">
-            <span className="question-number">Q{q.id}</span>
+            <span className="question-number">Q{questionIndex + 1}</span>
             {q.question}
           </p>
 
           <ul className="option-list">
             {q.options.map((opt, idx) => (
               <li key={idx}>
-                <label className="option-item">
+                <label
+                  className={`option-item ${answers[q.id] === idx ? "selected" : ""}`}
+                >
                   <input
                     type="radio"
                     name={`q-${q.id}`}
@@ -200,7 +253,7 @@ export default function PlacementTest() {
         </div>
       ))}
 
-      <div className="action-row center">
+      <div className="action-row center placement-submit-row">
         <button className="button" onClick={handleSubmit}>
           Шалгалтаа явуулах
         </button>
