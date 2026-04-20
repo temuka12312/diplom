@@ -7,6 +7,7 @@ import {
   type CatalogSearchResult,
   type LearningTrack,
 } from "../api/courses";
+import { searchGames } from "../data/games";
 import { API_ORIGIN } from "../api/axios";
 import { logout } from "../hooks/useAuth";
 import useAuth from "../hooks/useAuth";
@@ -21,6 +22,7 @@ import {
   FaUsers,
   FaHeart,
   FaSearch,
+  FaGamepad,
 } from "react-icons/fa";
 import "../style/layout.css";
 
@@ -39,6 +41,7 @@ export default function DashboardLayout({ children }: Props) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<CatalogSearchResult | null>(null);
+  const [gameResults, setGameResults] = useState(searchGames(""));
   const [searchOpen, setSearchOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLDivElement | null>(null);
@@ -91,6 +94,7 @@ export default function DashboardLayout({ children }: Props) {
     const query = searchQuery.trim();
     if (!query) {
       setSearchResults(null);
+      setGameResults([]);
       setSearchOpen(false);
       return;
     }
@@ -99,9 +103,11 @@ export default function DashboardLayout({ children }: Props) {
       try {
         const data = await searchCatalog(query);
         setSearchResults(data);
+        setGameResults(searchGames(query));
         setSearchOpen(true);
       } catch {
         setSearchResults(null);
+        setGameResults(searchGames(query));
       }
     }, 220);
 
@@ -127,6 +133,7 @@ export default function DashboardLayout({ children }: Props) {
     ["/progress", "Learning Progress"],
     ["/level-up-test", "Level Test"],
     ["/community", "Community"],
+    ["/games", "Games"],
     ["/dashboard", "Home"],
   ];
   const headerTitle =
@@ -139,8 +146,11 @@ export default function DashboardLayout({ children }: Props) {
   };
 
   const hasSearchResults = Boolean(
-    searchResults &&
-      (searchResults.tracks.length || searchResults.courses.length || searchResults.lessons.length)
+    gameResults.length ||
+      (searchResults &&
+        (searchResults.tracks.length ||
+          searchResults.courses.length ||
+          searchResults.lessons.length))
   );
 
   return (
@@ -250,6 +260,17 @@ export default function DashboardLayout({ children }: Props) {
               )}
 
               <NavLink
+                to="/games"
+                className={({ isActive }) =>
+                  isActive ? "nav-item active" : "nav-item"
+                }
+                title="Games"
+              >
+                <FaGamepad />
+                {!collapsed && <span>Бүх тоглоом</span>}
+              </NavLink>
+
+              <NavLink
                 to="/liked-lessons"
                 className={({ isActive }) =>
                   isActive ? "nav-item active" : "nav-item"
@@ -315,7 +336,7 @@ export default function DashboardLayout({ children }: Props) {
                 <input
                   type="text"
                   className="header-search-input"
-                  placeholder="Search courses, tracks, lessons..."
+                  placeholder="Search courses, tracks, lessons, games..."
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   onFocus={() => {
@@ -388,10 +409,29 @@ export default function DashboardLayout({ children }: Props) {
                               ))}
                             </div>
                           )}
+
+                          {gameResults.length > 0 && (
+                            <div className="header-search-group">
+                              <span className="header-search-group-title">Games</span>
+                              {gameResults.map((game) => (
+                                <button
+                                  key={`game-${game.slug}`}
+                                  type="button"
+                                  className="header-search-item"
+                                  onClick={() =>
+                                    handleSearchNavigate(`/games?game=${game.slug}`)
+                                  }
+                                >
+                                  <strong>{game.title}</strong>
+                                  <span>{game.language} game</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </>
                       ) : (
                         <div className="header-search-empty">
-                          No matching track, course, or lesson found.
+                          No matching track, course, lesson, or game found.
                         </div>
                       )}
                     </motion.div>
