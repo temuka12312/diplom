@@ -510,18 +510,6 @@ export default function LessonDetail() {
               <span className="page-kicker">Lesson</span>
               <h1 className="page-title lesson-title">{lesson.title}</h1>
             </div>
-
-            {isCompleted ? (
-              <span className="status-pill success">Completed ✓</span>
-            ) : (
-              <button
-                className="button"
-                onClick={handleComplete}
-                disabled={!canMarkDone}
-              >
-                Mark as completed
-              </button>
-            )}
             <div className="lesson-top-actions">
               <button
                 type="button"

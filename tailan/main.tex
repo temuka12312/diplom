@@ -1,0 +1,1234 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage{fontspec}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{setspace}
+\setmainfont{FreeSerif}
+\usepackage{titlesec}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{float}
+
+\geometry{margin=2.5cm}
+\onehalfspacing
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    pdftitle={Хиймэл оюун ухаанд суурилсан шаталсан сургалтын системийн судалгаа, хөгжүүлэлт},
+    pdfauthor={Мөнхгэрэл Тэмүүлэн}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Хиймэл оюун ухаанд суурилсан шаталсан сургалтын системийн судалгаа, хөгжүүлэлт}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.6em}{}
+
+\newcommand{\insertimage}[3][0.85\textwidth]{%
+    \begin{figure}[H]
+        \centering
+        \IfFileExists{#2}{%
+            \includegraphics[width=#1]{#2}%
+        }{%
+            \fbox{%
+                \parbox[c][6cm][c]{0.8\textwidth}{%
+                    \centering Зураг олдсонгүй:\\ \texttt{#2}%
+                }%
+            }%
+        }%
+        \caption{#3}
+    \end{figure}
+}
+
+\begin{document}
+
+\begin{titlepage}
+    \thispagestyle{empty}
+    \pagecolor{cyan!55}
+    \color{black}
+    \centering
+
+    \vspace*{1.6cm}
+    {\Large \textsc{Шинжлэх Ухаан Технологийн Их Сургууль}}\\[0.35cm]
+    {\large \textsc{Мэдээлэл, Холбооны Технологийн Сургууль}}\\[1.1cm]
+
+    \IfFileExists{logo1.png}{\includegraphics[width=4.2cm]{logo1.png}\\[1.0cm]}{\vspace*{2.3cm}}
+
+    \begin{flushright}
+    {\small Удирдагч багш:}\;B.~Туяацэцэг\\[0.1cm]
+    \end{flushright}
+
+    \vspace{1.1cm}
+    {\LARGE \textbf{ХИЙМЭЛ ОЮУН УХААНД СУУРИЛСАН}}\\[0.35cm]
+    {\LARGE \textbf{ШАТЛАЛТАЙ СУРГАЛТЫН СИСТЕМ}}\\[0.45cm]
+    {\LARGE \textbf{СУДАЛГАА, ХӨГЖҮҮЛЭЛТ}}\\[2.2cm]
+
+    {\large \textsc{Бакалаврын төгсөлтийн ажил}}\\[2.4cm]
+
+    {\normalsize \textbf{Оюутан:} M.~Temuulen}\\[0.25cm]
+    {\normalsize \textbf{Оюутны код:} B221910045}\\[0.25cm]
+    {\normalsize \textbf{Мэргэжил:} Компьютерийн ухаан}\\[0.25cm]
+
+    \vfill
+    {\large Улаанбаатар хот}\\[0.2cm]
+    {\large 2026 он}
+
+    \nopagecolor
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Оршил}
+
+Сүүлийн жилүүдэд мэдээллийн технологи, интернетийн хүртээмж, cloud тооцоолол болон хиймэл оюун ухааны хөгжлийн нөлөөгөөр боловсролын салбарт мэдэгдэхүйц өөрчлөлт гарч байна. Ялангуяа цахим сургалт буюу e-learning орчин нь улам өргөжин хөгжиж, суралцагчид цаг хугацаа, байршлаас үл хамааран сургалтын агуулгад хандах боломжтой болсон. Үүний зэрэгцээ сургалтын агуулгыг зөвхөн дамжуулах бус, суралцагчийн түвшин, суралцах явц, гүйцэтгэлд нийцүүлэн ухаалаг байдлаар зохион байгуулах хэрэгцээ эрс нэмэгдэж байна.
+
+Цахим сургалтын системүүдийн үндсэн зорилго нь суралцагчдад сургалтын материалыг хүргэх, хичээлүүдийг системтэйгээр удирдах, суралцах явцыг хянах, багш болон суралцагчийн харилцааг хялбарчлахад оршдог. Гэсэн хэдий ч олон платформ нь хэрэглэгч бүрийн онцлогт тохирсон ухаалаг боломж хангалтгүй, нэг хэвийн агуулга түгээдэг, суралцагчийн түвшинг динамикаар тодорхойлдоггүй, тухайн хэрэглэгчид тохирсон recommendation өгөх чадвар сул зэрэг асуудалтай хэвээр байна.
+
+Монгол улсын хувьд цахим сургалтын системүүд сүүлийн жилүүдэд нэмэгдэж байгаа боловч ихэнх платформууд нь контент байршуулах, видео үзүүлэх, энгийн тест бөглүүлэх зэрэг суурь функцүүдээр хязгаарлагдсан хэвээр байна. Хиймэл оюун ухаан ашиглан хэрэглэгчийн түвшинд тохирсон сургалтын зам үүсгэх, хичээлд суурилсан шалгалт автоматаар зохиох, суралцагчийн явцад үндэслэн дараагийн алхмыг санал болгох, chatbot ашиглан тусламж үзүүлэх боломжууд Монгол хэл дээрх платформуудад харьцангуй бага хөгжсөн байна.
+
+Иймээс энэхүү дипломын ажлын хүрээнд суралцагчийн түвшин, оноо, хичээлийн явцад суурилан шаталсан байдлаар course болон lesson санал болгодог, хиймэл оюун ухааны тусламжтай summary, quiz, practice task, chatbot зэрэг боломжуудыг агуулсан веб систем боловсруулах зорилго тавьсан болно. Энэхүү систем нь зөвхөн сургалтын агуулга үзүүлэх бус, placement test, level-up test, progress summary, discussion, game-based interaction зэрэг боломжуудыг нэгтгэснээрээ онцлог юм.
+
+Энэхүү систем нь дараах үндсэн асуудлыг шийдвэрлэхийг зорьж байна.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Суралцагчийн мэдлэгийн түвшинг тодорхойлох
+    \item Тухайн түвшинд тохирсон хичээл санал болгох
+    \item Хичээлийн явцыг хянах, оноог тооцоолох
+    \item Хиймэл оюун ухааны тусламжтай ухаалаг тусламж үзүүлэх
+    \item Системийг орчин үеийн full-stack архитектураар хэрэгжүүлэх
+\end{itemize}
+
+\section{Судалгааны хэсэг}
+
+\subsection{Цахим сургалтын системийн тухай ойлголт}
+
+Цахим сургалт буюу e-learning нь интернет болон компьютерийн технологид суурилан мэдлэг олгох, түгээх, үнэлэх, удирдах үйл ажиллагааг хэлнэ. Энэхүү сургалтын хэлбэр нь уламжлалт сургалтын арга барилыг дэмжихээс гадна бие даан суралцах боломжийг өргөжүүлдэг. Орчин үеийн e-learning систем нь зөвхөн контент хадгалах сан байхаа больж, хэрэглэгчийн оролцоо, analytics, personalization, recommendation, assessment зэрэг олон давхар боломжийг агуулсан програм хангамжийн цогц систем болж хөгжиж байна.
+
+E-learning системийн нийтлэг боломжууд нь дараах байдалтай байна.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгчийн бүртгэл, нэвтрэх боломж
+    \item Хичээл, курс, материал байршуулах
+    \item Даалгавар, шалгалт авах
+    \item Суралцагчийн явцыг хянах
+    \item Дүн, оноо тооцох
+\end{itemize}
+
+Цахим сургалтын системүүдийн давуу талууд нь дараах байдалтай.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Цаг, орон зайнаас үл хамааран суралцах
+    \item Контентын хялбар хүртээмж
+    \item Суралцагч өөрийн хурдаар суралцах боломж
+    \item Сургалтын материалыг олон дахин үзэх боломж
+    \item Удирдлага, хяналтыг автоматжуулах
+\end{itemize}
+
+Гэсэн хэдий ч сул талууд байдаг. Үүнд:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгч бүрт ижил агуулга санал болгодог
+    \item Хувь хүнд тохирсон сургалтын зам дутмаг
+    \item Суралцагчийн идэвхийг тогтвортой барихад хүндрэлтэй
+    \item Шууд харилцааны дутагдалтай
+\end{itemize}
+
+\subsection{Монгол дахь e-learning системийн нөхцөл байдал}
+
+Монгол улсад онлайн сургалтын платформууд хөгжиж байгаа хэдий ч олонхи нь зөвхөн статик контент байршуулах төвшинд байгаа нь ажиглагддаг. Тодруулбал дараах асуудлууд түгээмэл байна.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хичээлүүдийг хэрэглэгчийн түвшинд тохируулахгүй
+    \item Course recommendation систем дутмаг
+    \item Progress систем хангалтгүй
+    \item AI-based туслах болон personalized quiz систем ховор
+    \item Монгол хэл дээрх ухаалаг сургалтын систем цөөн
+\end{itemize}
+
+Энэ нь дотоодын цахим сургалтын платформуудын хөгжилд боломж байгаа ч хэрэглэгч төвтэй, өгөгдөлд суурилсан, хиймэл оюун ухааны шийдлүүд хангалтгүй байгааг харуулж байна. Иймээс Монгол хэл дээр ажиллах, програмчлалын сургалтад чиглэсэн, шаталсан логиктой систем хөгжүүлэх судалгааны хэрэгцээ бодитой байна.
+
+\subsection{Хиймэл оюун ухаанд суурилсан сургалтын систем}
+
+Орчин үеийн ухаалаг сургалтын системүүд нь хиймэл оюун ухааныг дараах үндсэн чиглэлүүдэд ашиглаж байна.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Adaptive learning буюу хэрэглэгчийн түвшинд тохирсон сургалт
+    \item Автомат тест, асуулт зохиох
+    \item Text summarization буюу хичээлийн агуулга хураангуйлах
+    \item Хиймэл оюунд суурилсан ухаалаг туслах
+    \item Recommendation engine буюу тохирсон хичээл санал болгох
+\end{itemize}
+
+Хиймэл оюун ухааныг сургалтын системд ашигласнаар дараах үр өгөөж бий болдог. Нэн ялангуяа generative AI үйлчилгээ ашигласнаар course болон lesson content дээр тулгуурласан summary, quiz, explanation, tutoring response зэргийг автоматаар үүсгэх боломж бүрдэж байна.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Суралцагчид илүү оновчтой контент хүрдэг
+    \item Суралцах замнал хувь хүнд тохирдог
+    \item Үнэлгээ, шалгалтын процесс автоматждаг
+    \item Хэрэглэгчид шууд асуултаа асууж, хариулт авах боломжтой болдог
+\end{itemize}
+
+\section{Системийн зорилго ба зорилтууд}
+
+\subsection{Ерөнхий зорилго}
+
+Хиймэл оюунд суурилсан, хэрэглэгчийн мэдлэгийн түвшинг харгалзан шатлалтайгаар хичээл санал болгодог цахим сургалтын системийг хөгжүүлэх.
+
+\subsection{Тусгай зорилтууд}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгчийн бүртгэл, нэвтрэх системийг хөгжүүлэх
+    \item Хичээл, курсийн мэдээллийг удирдах боломжтой болгох
+    \item Placement test ашиглан анхны түвшин тогтоох
+    \item Level-up test ашиглан дараагийн түвшинд ахих боломжтой болгох
+    \item Progress tracking систем хөгжүүлэх
+    \item Хиймэл оюун ухаанаар хичээлийн summary болон quiz үүсгэх
+    \item AI chatbot нэмэх
+    \item Docker ашиглан системийг ажиллуулах
+\end{itemize}
+
+\insertimage[\textwidth]{zurag/diagram}{Системийн ерөнхий архитектур}
+
+Энэхүү систем нь frontend, backend, database болон AI service гэсэн үндсэн бүрэлдэхүүн хэсгүүдээс тогтоно. Frontend хэсэг нь хэрэглэгчийн бүх дэлгэц, navigation болон интерактив ажиллагааг хариуцдаг бол backend хэсэг нь authentication, course management, progress tracking, AI request боловсруулах логикийг хариуцдаг. Database нь хэрэглэгч, курс, хичээл, ахиц, community discussion зэрэг өгөгдлийг хадгалж, AI service нь summary, quiz, placement test, level-up test, moderation зэрэг ухаалаг боломжуудыг гүйцэтгэнэ.
+
+\subsection{Frontend хэсэг}
+
+Frontend хэсэг нь React, TypeScript, Vite, React Router ашиглан хөгжүүлэгдсэн. Хэрэглэгчтэй шууд харилцах интерфейсийг энэ хэсэг бүрдүүлж, route бүрийг хамгаалсан байдлаар зохион байгуулсан. Мөн `DashboardLayout`, `AuthLayout`, `PageFade`, `ChatWidget` зэрэг дахин ашиглагдах component-уудыг ашиглан layout болон хэрэглэгчийн туршлагыг тогтвортой болгосон. Үүнд:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Login болон Register хуудас
+    \item Dashboard буюу үндсэн нүүр
+    \item Courses жагсаалт
+    \item Course detail болон Lesson detail
+    \item Progress summary
+    \item Placement test болон Level-up test
+    \item AI chatbot popup
+\end{itemize}
+
+\subsection{Backend хэсэг}
+
+Backend хэсэг нь Django, Django REST Framework, Simple JWT ашиглан хөгжүүлэгдсэн. Backend нь REST API хэлбэрээр frontend-тэй холбогдож, хэрэглэгчийн мэдээлэл, course болон lesson өгөгдөл, progress, AI response, community discussion, code execution зэрэг өгөгдлийг боловсруулж дамжуулдаг.
+
+Төслийн backend-ийг module байдлаар салгасан бөгөөд энэ нь кодын бүтэц, өргөтгөх боломж, хариуцлагын заагийг тодорхой болгосон. Үндсэн backend модуль:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Users app
+    \item Courses app
+    \item Progress app
+    \item AI engine app
+\end{itemize}
+
+\subsection{Өгөгдлийн сан}
+
+Өгөгдлийн сангийн хувьд PostgreSQL ашигласан. Course нь LearningTrack-тай холбоотой байхаар бүтэцлэгдсэн бөгөөд Lesson нь video URL, video file, PDF file, attachment, practice task, expected output, bonus score зэрэг талбаруудыг агуулдаг. Мөн LikedLesson модель ашиглан хэрэглэгчийн дуртай хичээлийг хадгалдаг. Дараах өгөгдлүүд хадгалагдана.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгчийн мэдээлэл
+    \item Курс болон хичээлийн мэдээлэл
+    \item Суралцагчийн progress
+    \item Оноо, түвшин, гүйцэтгэл
+\end{itemize}
+
+\subsection{AI интеграцийн хэсэг}
+
+AI engine нь Gemini API ашиглан дараах функцуудыг хэрэгжүүлнэ. Хэрэв API key байхгүй эсвэл AI service алдаа өгвөл зарим endpoint fallback логикоор ажиллахаар шийдсэн нь системийн тасралтгүй ажиллагаанд давуу тал болсон.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хичээлийн summary үүсгэх
+    \item Lesson quiz үүсгэх
+    \item Placement test асуулт үүсгэх
+    \item Level-up test асуулт үүсгэх
+    \item Chatbot байдлаар хэрэглэгчтэй харилцах
+\end{itemize}
+
+\section{Системийн шаардлагын шинжилгээ}
+
+\subsection{Шаардлагын шинжилгээ хийх үндэслэл}
+
+Програм хангамжийн системийг амжилттай хөгжүүлэхийн тулд тухайн систем ямар хэрэглэгчдэд зориулагдсан, ямар асуудлыг шийдвэрлэх, ямар нөхцөлд ажиллах, ямар үйлдлүүдийг заавал дэмжих шаардлагатайг эхний шатанд тодорхойлох нь чухал байдаг. Энэхүү дипломын ажлын систем нь энгийн мэдээллийн сайт биш, харин хэрэглэгчийн түвшин, сургалтын ахиц, хиймэл оюуны боломж, шалгалтын логик, олон төрлийн interface, backend API, database бүтэц зэрэг олон хэсгээс бүрдэх тул шаардлагын шинжилгээ нь системийн архитектурын үндэс болсон.
+
+Энэ бүлэгт системийн functional requirement, non-functional requirement, үндсэн хэрэглэгчид, use case, өгөгдлийн урсгал, бизнес дүрэм, хэрэглэгчийн урсгал зэргийг задлан авч үзнэ. Ингэснээр дараагийн бүлгүүдэд тайлбарлах зохиомж, хэрэгжилт, туршилтын хэсгүүд онол-арга зүйн үндэслэлтэй болно.
+
+\subsection{Системийн үндсэн хэрэглэгчид}
+
+Тус системийн хүрээнд дараах үндсэн хэрэглэгчдийг тодорхойлж үзэв.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Student: сургалтын үндсэн хэрэглэгч бөгөөд бүртгүүлэх, нэвтрэх, placement test өгөх, course үзэх, lesson судлах, progress харах, AI тусламж авах, games тоглох, discussion-д оролцох боломжтой.
+    \item Mentor: систем дотор advanced түвшинд хүрч, тодорхой босго давсан хэрэглэгчдийг mentor role руу автоматаар шилжүүлэх боломжтой байдлаар модельчлогдсон.
+    \item Admin: системийн өгөгдөл, хэрэглэгч, course, lesson, AI workflow, moderation зэрэг хэсгийг удирдах дээд түвшний хэрэглэгч.
+\end{itemize}
+
+Хэдийгээр frontend дээр одоогоор student төвтэй interface давамгай хэрэгжсэн боловч backend model болон role logic түвшинд mentor, admin гэсэн өргөтгөх боломжийг үлдээсэн нь системийн цаашдын өсөлтөд нийцэж байна.
+
+\subsection{Functional requirements}
+
+Functional requirement буюу үйл ажиллагааны шаардлага нь систем хэрэглэгчид яг ямар үйлдэл хийх боломж олгохыг тодорхойлно. Төслийн хэрэгжилтээс харахад дараах үндсэн functional requirement-ууд тодорхойлогдоно.
+
+\subsubsection{Хэрэглэгчийн удирдлага}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгч бүртгүүлэх
+    \item Хэрэглэгч нэвтрэх
+    \item JWT token ашиглан session удирдах
+    \item Хэрэглэгчийн profile мэдээлэл харах
+    \item Хэрэглэгчийн role, skill level, total score, completed lessons мэдээллийг хадгалах
+\end{itemize}
+
+\subsubsection{Сургалтын агуулгын удирдлага}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Learning track үүсгэх, tracks-аар course ангилан үзүүлэх
+    \item Course жагсаалт харах
+    \item Course detail page дээр lesson-уудыг дарааллаар харах
+    \item Lesson detail page дээр текстэн content, video, file attachment, practice task үзэх
+    \item Дуртай lesson хадгалах
+\end{itemize}
+
+\subsubsection{Түвшин тогтоох ба шат ахих логик}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Placement test үүсгэх
+    \item Placement test submit хийж анхны түвшин тогтоох
+    \item Level-up test үүсгэх
+    \item Level-up test submit хийж дараагийн шатанд ахих эсэхийг шийдэх
+    \item Нийт score-д үндэслэн skill level автоматаар шинэчлэх
+\end{itemize}
+
+\subsubsection{Ахиц ба үнэлгээ}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Lesson completion бүртгэх
+    \item Оноо хадгалах
+    \item Course тус бүрийн progress percent бодох
+    \item Weekly activity тооцоолох
+    \item Completed lesson count болон total score харуулах
+\end{itemize}
+
+\subsubsection{Хиймэл оюуны функцууд}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Lesson summary автоматаар үүсгэх
+    \item Lesson quiz автоматаар үүсгэх
+    \item Practice task автоматаар үүсгэх
+    \item Recommended lessons санал болгох
+    \item AI chatbot-оор асуулт хариулт хийх
+    \item Community moderation-д AI ашиглах
+\end{itemize}
+
+\subsubsection{Интерактив дадлага ба тоглоом}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Python code runner ашиглан код ажиллуулах
+    \item Web practice preview үзүүлэх
+    \item CSS, HTML, Python хэл дээрх game module ажиллуулах
+    \item Game catalog-аас detail page руу шилжих
+\end{itemize}
+
+\subsubsection{Community interaction}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Lesson-тэй холбоотой discussion post үүсгэх
+    \item Comment бичих
+    \item Keyword moderation болон AI moderation хийх
+\end{itemize}
+
+\subsection{Non-functional requirements}
+
+Non-functional requirement нь системийн чанарын шаардлагыг илэрхийлдэг. Энэхүү системийн хувьд дараах чанарын шаардлагууд чухал гэж үзэв.
+
+\subsubsection{Performance}
+
+Системийн үндсэн дэлгэцүүд богино хугацаанд ачаалагдах ёстой. Ялангуяа Login, Dashboard, Courses, Lesson detail, Progress зэрэг давтамжтай ашиглагдах page-ууд нь хэрэглэгчийн туршлагад шууд нөлөөлөх учир API response болон frontend render боломжийн хурдтай байх шаардлагатай. AI endpoint-уудын хувьд гадаад service ашиглаж байгаа тул fallback болон loading state заавал хэрэгтэй.
+
+\subsubsection{Scalability}
+
+Course, lesson, хэрэглэгчийн тоо өсөх үед системийн бүтэц өргөжих боломжтой байх ёстой. Backend-ийг app-уудаар салгасан, database-ийг PostgreSQL дээр суурилуулсан, Docker ашигласан нь энэ шаардлагыг хангахад чиглэсэн.
+
+\subsubsection{Security}
+
+Authentication нь JWT дээр суурилсан байх, хамгаалагдсан route болон permission хэрэглэх, шалгалтын асуултыг session дээр хадгалж cheating эрсдэлийг бууруулах, code runner дээр timeout болон resource limit тогтоох, community moderation хийх зэрэг нь аюулгүй байдлын шаардлагыг хангах үндсэн шийдэл болсон.
+
+\subsubsection{Usability}
+
+Системийг программчлал сурч буй хэрэглэгч төвтэйгээр төлөвлөсөн. Иймээс interface нь ойлгомжтой navigation-тай, course progression тодорхой харагддаг, AI тусламж авахад хялбар, game module-ууд нь beginner түвшинд ээлтэй байх шаардлагатай.
+
+\subsubsection{Maintainability}
+
+Frontend болон backend-ийг тусад нь салгасан, router, page, component, API module, Django app зэрэг бүтэцтэй болгосон нь кодын maintainability-г сайжруулсан. Энэ нь цаашид шинэ module нэмэхэд давуу тал болно.
+
+\subsubsection{Availability}
+
+AI service түр ажиллахгүй байсан ч системийн үндсэн course, lesson, progress, navigation зэрэг боломжууд ажиллах ёстой. Иймээс summary зэрэг хэсэгт fallback логик ашигласан нь availability шаардлагыг дэмжсэн.
+
+\subsection{Бизнес дүрэм}
+
+Системийн дотоод логик дараах бизнес дүрмүүд дээр суурилж байна.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгч эхлээд placement test өгсний дараа анхны түвшин тогтоогдоно.
+    \item Lesson completion бүрт хэрэглэгчийн score нэмэгдэж, total score aggregate байдлаар шинэчлэгдэнэ.
+    \item Total score-ийн босгоос шалтгаалан skill level beginner, elementary, intermediate, advanced болж өөрчлөгдөнө.
+    \item Advanced түвшинд хүрч, хангалттай lesson completed болсон хэрэглэгч mentor role авах боломжтой.
+    \item Level-up test нь одоогийн түвшинд суурилсан контентоос үүсэх ёстой.
+    \item Discussion post болон comment бүр moderation шалгалтаар дамжина.
+    \item Code runner нь resource limit-тэй орчинд ажиллах ёстой.
+\end{itemize}
+
+\subsection{Use case шинжилгээ}
+
+Системийн үндсэн use case-уудыг дараах байдлаар тодорхойлж болно.
+
+\subsubsection{Use case 1: Хэрэглэгч бүртгүүлэх ба нэвтрэх}
+
+\textbf{Actor:} Student
+
+\textbf{Үндсэн урсгал:}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгч Register page руу орно.
+    \item Шаардлагатай мэдээллээ бөглөнө.
+    \item Систем хэрэглэгчийн бүртгэлийг үүсгэнэ.
+    \item Хэрэглэгч Login хийж access token авна.
+    \item Dashboard руу шилжинэ.
+\end{itemize}
+
+\subsubsection{Use case 2: Placement test өгөх}
+
+\textbf{Actor:} Student
+
+\textbf{Үндсэн урсгал:}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгч Placement test page руу орно.
+    \item Backend content-based асуултууд үүсгэнэ.
+    \item Хэрэглэгч асуултад хариулж submit хийнэ.
+    \item Систем зөв хариултын хувь бодно.
+    \item Skill level автоматаар тогтоогдоно.
+\end{itemize}
+
+\subsubsection{Use case 3: Lesson судлах ба completion тэмдэглэх}
+
+\textbf{Actor:} Student
+
+\textbf{Үндсэн урсгал:}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгч Course detail page-оос lesson сонгоно.
+    \item Lesson detail page дээр content, video, practice task, AI summary, AI quiz харна.
+    \item Practice эсвэл quiz дээр ажиллана.
+    \item Lesson completion дарснаар score хадгалагдана.
+    \item Progress summary шинэчлэгдэнэ.
+\end{itemize}
+
+\subsubsection{Use case 4: AI тусламж ашиглах}
+
+\textbf{Actor:} Student
+
+\textbf{Үндсэн урсгал:}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгч lesson page эсвэл chatbot popup нээнэ.
+    \item Summary, quiz, chatbot response хүснэ.
+    \item Backend Gemini API дуудна.
+    \item Үр дүнг JSON бүтэцтэйгээр frontend-д буцаана.
+    \item Frontend хэрэглэгчид ойлгомжтой хэлбэрээр үзүүлнэ.
+\end{itemize}
+
+\subsubsection{Use case 5: Games module ашиглах}
+
+\textbf{Actor:} Student
+
+\textbf{Үндсэн урсгал:}
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгч Games page руу орно.
+    \item Search эсвэл language filter ашиглан game сонгоно.
+    \item Game detail page руу орно.
+    \item Level-based interactive puzzle ажиллуулна.
+    \item Даалгавар зөв хийсэн эсэхийг систем шалгана.
+\end{itemize}
+
+\subsection{Хэрэглэгчийн урсгал}
+
+Системийн хэрэглэгчийн ерөнхий урсгалыг дараах дарааллаар тодорхойлж болно.
+
+\begin{enumerate}
+    \item Хэрэглэгч системд бүртгүүлж, нэвтэрнэ.
+    \item Placement test өгч анхны skill level тогтоолгоно.
+    \item Өөрт тохирсон course-уудыг нээнэ.
+    \item Lesson бүрийг судалж, video, file, practice task, AI summary, AI quiz ашиглана.
+    \item Lesson completion хийж progress болон total score-оо нэмэгдүүлнэ.
+    \item Progress summary page дээр ахицаа хянана.
+    \item Дараагийн шатанд хүрэх үед level-up test өгнө.
+    \item Нэмэлтээр games, community discussion, chatbot боломжуудыг ашиглана.
+\end{enumerate}
+
+\subsection{Шаардлагын шинжилгээний дүгнэлт}
+
+Энэхүү шаардлагын шинжилгээнээс харахад систем нь зөвхөн course үзүүлэх энгийн web application биш, харин authentication, progress tracking, dynamic level logic, AI integration, sandboxed code execution, moderation, gamified interaction зэрэг олон хэсгээс бүрдэх цогц програм хангамжийн систем юм. Иймээс дараагийн бүлгүүдэд системийн зохиомж, өгөгдлийн сангийн бүтэц, backend болон frontend хэрэгжилтийг тус тусад нь нарийвчлан авч үзэх шаардлагатай.
+
+\section{Системийн зохиомж}
+
+\subsection{Системийн архитектурын ерөнхий шийдэл}
+
+Энэхүү системийг олон давхаргат архитектурын зарчмаар зохион байгуулсан. Гол зорилго нь presentation layer, business logic layer, data layer болон external AI service layer-ийг харилцан хамаарал багатай байлгах, ингэснээр системийн maintainability, extensibility, testability-г сайжруулах явдал байв.
+
+Төслийн архитектур дараах үндсэн давхаргуудаас бүрдэнэ.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Presentation layer: React, TypeScript, Vite дээр суурилсан frontend
+    \item Application layer: Django REST Framework API
+    \item Domain/Data layer: PostgreSQL болон Django ORM
+    \item AI integration layer: Gemini API болон AI workflow logic
+    \item Execution support layer: Docker, code runner sandbox, moderation workflow
+\end{itemize}
+
+Энэхүү архитектурын гол давуу тал нь frontend болон backend хэсгийг бие даасан хөгжүүлэлт, deployment, өргөтгөл хийх боломжтой болгосон явдал юм. Frontend нь REST API ашиглан backend-тэй холбогддог тул ирээдүйд mobile client, admin panel, эсвэл өөр төрлийн client нэмэх боломж нээлттэй байна.
+
+\subsection{Layered architecture-ийн тайлбар}
+
+\subsubsection{Presentation layer}
+
+Presentation layer нь хэрэглэгчтэй харилцах бүх interface-ийг агуулна. Энэ түвшинд route management, layout, forms, buttons, cards, progress visualization, game interaction, AI response rendering, video playback, practice preview зэрэг ажиллагаа хийгддэг. Frontend хэсэг нь зөвхөн харагдах байдал бус, хэрэглэгчийн state, loading, error handling, local interaction logic-ийг мөн хариуцдаг.
+
+\subsubsection{Application layer}
+
+Application layer нь backend API болон service logic-ийг агуулна. Энэ түвшинд request validation, authentication, permission check, business rule execution, AI request orchestration, progress calculation, placement test evaluation, moderation, code execution wrapper зэрэг логик төвлөрсөн. Энэ давхарга нь frontend-с ирсэн хүсэлтийг domain logic-той холбох үүрэгтэй.
+
+\subsubsection{Data layer}
+
+Data layer нь Django ORM болон PostgreSQL өгөгдлийн сангаар хэрэгжсэн. User, Course, LearningTrack, Lesson, LessonProgress, LikedLesson, CommunityPost, CommunityComment зэрэг entity-үүд энд хадгалагдана. ORM ашигласнаар relationship management, aggregate query, filter, annotate, data consistency зэрэг ажиллагааг хялбар хэрэгжүүлэх боломжтой болсон.
+
+\subsubsection{AI integration layer}
+
+AI integration layer нь системийн онцгой хэсэг юм. Энэ давхарга нь lesson content-оос summary гаргах, quiz үүсгэх, practice task бүтээх, placement болон level-up test зохиох, moderation хийх, chatbot response буцаах зэрэг ажиллагааг гүйцэтгэнэ. AI service-тэй шууд холбогдохгүйгээр backend дундын логикоор дамжин ажиллуулсан нь prompt control, fallback, error handling, response sanitation хийх боломжийг нэмэгдүүлсэн.
+
+\subsection{Frontend зохиомж}
+
+\subsubsection{Route structure}
+
+Frontend route бүтэц нь хэрэглэгчийн урсгалд тулгуурлан тодорхойлогдсон. Public route-ууд нь Landing page, Login, Register зэрэг дэлгэцүүдийг агуулдаг бол protected route-ууд нь Dashboard, Courses, Tracks, Lesson detail, Progress, Placement test, Level-up test, Community, Games зэрэг системийн үндсэн ажиллагааг агуулна.
+
+Route хамгаалалт хийхдээ `ProtectedRoute` component ашигласан. Ингэснээр authentication хийгдээгүй хэрэглэгч системийн үндсэн page-үүдэд шууд хандах боломжгүй болсон. Энэ зохиомж нь client-side access control-ийн үндсэн түвшинг бүрдүүлнэ.
+
+\subsubsection{Layout architecture}
+
+Frontend дотор layout-уудыг тусад нь салгаж өгсөн. `DashboardLayout` нь sidebar, header, content бүхий үндсэн хэрэглэгчийн орчныг бүрдүүлдэг. `AuthLayout` нь Login болон Register зэрэг authentication page-үүдэд ижил харагдах бүтэц өгдөг. Энэ шийдэл нь UI consistency хадгалах, code duplication багасгах давуу талтай.
+
+\subsubsection{Page decomposition}
+
+Системийн page-үүдийг domain-ийн дагуу хуваасан. Жишээлбэл:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Learning pages: Courses, CourseDetail, LessonDetail, Tracks, TrackCourses
+    \item Assessment pages: PlacementTest, LevelUpTest
+    \item Analytics pages: ProgressSummary, MyLearning
+    \item Social pages: Community
+    \item Engagement pages: Games, GameDetail
+    \item Support pages: Profile, ChatWidget, ChatPopup
+\end{itemize}
+
+Ийм decomposition нь page бүрийг тусдаа хөгжүүлэх, style-ийг domain-аар нь салгах, API дуудлагыг илүү ойлгомжтой удирдах боломж олгосон.
+
+\subsubsection{Lesson detail page-ийн зохиомж}
+
+Lesson detail page нь системийн хамгийн чухал composite interface юм. Энэ page нь хэд хэдэн тусдаа interaction-ийг нэг дор нэгтгэдэг:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хичээлийн үндсэн content харах
+    \item Video URL эсвэл file тоглуулах
+    \item AI summary татах
+    \item AI quiz ажиллуулах
+    \item Practice task дээр ажиллах
+    \item Python code runner ашиглах
+    \item Web preview үзүүлэх
+    \item Discussion post/comment үүсгэх
+    \item Lesson completion тэмдэглэх
+\end{itemize}
+
+Энэ page-ийн зохиомж нь feature-centric бус, learner-centric хандлагаар хийгдсэн. Өөрөөр хэлбэл хэрэглэгч нэг lesson дээр ажиллах үед хэрэгтэй бүх дэд боломж нэг дэлгэцэнд цугларсан байна.
+
+\subsection{Backend зохиомж}
+
+\subsubsection{App-based modular design}
+
+Backend-ийг Django app-уудаар салгасан нь домэйн хариуцлагыг тодорхой болгодог. Үүнд:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item `users`: хэрэглэгч, role, skill level, profile logic
+    \item `courses`: learning track, course, lesson, liked lesson
+    \item `progress`: lesson completion, score, progress summary
+    \item `ai_engine`: summary, quiz, practice task, chatbot, placement, level-up, code runner
+    \item `community`: post, comment, moderation
+    \item `api`: system health болон суурь API шалгах endpoint
+\end{itemize}
+
+Энэ бүтэц нь шинэ feature нэмэхэд тохиромжтой. Жишээ нь ирээдүйд payments, certificate, admin analytics, notifications гэх мэт шинэ хэсгийг тусдаа app байдлаар нэмж болох юм.
+
+\subsubsection{Service-oriented endpoint design}
+
+API endpoint-уудыг page-centered бус, responsibility-centered байдлаар тодорхойлсон. Жишээлбэл progress logic нь тусдаа endpoint, AI summary/quiz нь тусдаа endpoint, placement болон level-up test нь тусдаа endpoint, code execution нь тусдаа endpoint хэлбэрээр зохион байгуулагдсан.
+
+Энэ шийдэл нь дараах давуу талтай:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Endpoint бүрийн зорилго тодорхой
+    \item Frontend integration хийхэд хялбар
+    \item Error handling тусгаарлагдсан
+    \item Testing хийхэд илүү ойлгомжтой
+\end{itemize}
+
+\subsubsection{Session-based assessment control}
+
+Placement test болон level-up test-ийн асуултуудыг session дотор хадгалдаг байдлаар шийдсэн. Энэ нь шалгалтын асуултыг frontend талаас дур мэдэн өөрчлөх, submit үеэр хуурамч answer context үүсгэх эрсдэлийг бууруулсан. Assessment logic-ийг server-side байлгах нь системийн integrity-г хамгаалсан чухал шийдэл болсон.
+
+\subsection{Өгөгдлийн сангийн зохиомж}
+
+\subsubsection{Entity relationship тайлбар}
+
+Өгөгдлийн сангийн гол entity-үүдийн холбоос дараах бүтэцтэй байна.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Нэг `LearningTrack` олон `Course` агуулна.
+    \item Нэг `Course` олон `Lesson` агуулна.
+    \item Нэг `User` олон `LessonProgress` бүртгэлтэй байж болно.
+    \item Нэг `Lesson` олон `LessonProgress` бүртгэлтэй байж болно.
+    \item `User` болон `Lesson` хооронд `LikedLesson` гэсэн many-to-many төстэй холбоос бий.
+    \item Нэг `Lesson` олон `CommunityPost` агуулж болно.
+    \item Нэг `CommunityPost` олон `CommunityComment` агуулна.
+\end{itemize}
+
+Энэ бүтэц нь сургалтын платформын үндсэн өгөгдлийг хадгалахад хангалттай бөгөөд хэрэглэгчийн ахиц, сонирхол, discussion activity-г холбож харах боломжийг бүрдүүлдэг.
+
+\subsubsection{Normalization ба data consistency}
+
+Entity-үүдийг тус тусад нь салгаж, foreign key холбоос ашигласнаар өгөгдлийн давхардлыг багасгасан. Жишээлбэл course-ийн title, description-г progress хүснэгтэд давхар хадгалахгүй, харин LessonProgress нь зөвхөн user болон lesson reference, completion state, score-г хадгалдаг. Энэ нь өгөгдлийн consistency-г хангах, update хийх үед алдаа үүсэх магадлалыг бууруулах давуу талтай.
+
+\subsubsection{Aggregate data design}
+
+Хэдийгээр detail progress өгөгдөл нь LessonProgress хүснэгтэд хадгалагдаж байгаа боловч хэрэглэгчийн `total_score`, `completed_lessons`, `skill_level` зэрэг aggregate шинжтэй мэдээллийг User model дээр хадгалсан. Энэ нь dashboard болон profile зэрэг page дээр мэдээллийг хурдан унших давуу талтай. Гэхдээ энэхүү aggregate өгөгдлийг lesson completion бүрт дахин тооцоолж синхрончлох логик шаардлагатай байдаг.
+
+\subsection{API зохиомж}
+
+\subsubsection{API communication flow}
+
+Frontend нь `axios` wrapper ашиглан backend API-тай холбогдоно. Request ихэвчлэн дараах дарааллаар хийгдэнэ.
+
+\begin{enumerate}
+    \item Хэрэглэгч frontend дээр action хийнэ.
+    \item Frontend state update хийхийн өмнө API request илгээнэ.
+    \item Backend authentication болон validation хийнэ.
+    \item Business logic ажиллана.
+    \item Database-аас өгөгдөл унших эсвэл бичих ажиллагаа хийнэ.
+    \item JSON response frontend рүү буцна.
+    \item Frontend UI state-ээ шинэчилнэ.
+\end{enumerate}
+
+\subsubsection{Representative API groups}
+
+Системийн API-г дараах үндсэн бүлгүүдэд хувааж үзэж болно.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Auth API: register, login, current user
+    \item Course API: course list, course detail, lesson detail, liked lesson toggle
+    \item Progress API: lesson progress, complete lesson, progress summary
+    \item AI API: lesson summary, lesson quiz, recommended lessons, placement quiz, level-up quiz, run code
+    \item Community API: post list, create post, create comment
+\end{itemize}
+
+\subsection{Code runner зохиомж}
+
+Системийн нэг онцгой хэсэг нь Python code runner юм. Энэ хэсгийг шууд shell execute байдлаар бус, resource limit-тэй, timeout-той, output truncate хийдэг байдлаар зохион байгуулсан. CPU time, memory size, output file size, process count зэрэгт хязгаар тавьснаар дурын код ажиллуулах эрсдэлийг бууруулах зорилготой.
+
+Code runner-ийн зохиомж нь дараах алхмаар хэрэгжинэ.
+
+\begin{enumerate}
+    \item Frontend practice хэсгээс Python code илгээгдэнэ.
+    \item Backend хэлний төрөл, code хэмжээ, timeout тохиргоог шалгана.
+    \item Түр файл үүсгэж, тусгаарлагдсан subprocess ажиллуулна.
+    \item Resource limit үйлчилнэ.
+    \item Output болон error-г боловсруулж frontend рүү JSON бүтэцтэй буцаана.
+\end{enumerate}
+
+\subsection{Community moderation зохиомж}
+
+Community interaction нь системийн social layer болох тул moderation зайлшгүй шаардлагатай. Энэхүү төслөөр хоёр шатлалт moderation хийсэн.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Keyword moderation: тодорхой banned words илэрвэл шууд reject
+    \item AI moderation: текстийг allow, review, reject гэсэн төлөвт ангилах
+\end{itemize}
+
+Энэ зохиомж нь хэт энгийн blacklist логикоос илүү уян хатан бөгөөд AI ашиглан контекстэд ойролцоо үнэлгээ хийх боломжтой болгосон.
+
+\subsection{Games module-ийн зохиомж}
+
+Games module-ийг үндсэн course flow-оос тусгаарласан нь чухал архитектурын шийдэл болсон. Учир нь тоглоомон хэлбэрийн дадлагууд course content-тэй ижил логиктой байх албагүй. Games page нь catalog маягийн бүтэцтэй, game бүр detail route-тай, playable game-ууд нь component түвшинд тусгаарлагдсан.
+
+Энэ зохиомжийн давуу тал нь:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Шинэ game нэмэхэд үндсэн learning flow-г эвдэхгүй
+    \item Search болон filter хийхэд хялбар
+    \item Game бүр өөр interaction logic-той байж чадна
+    \item Gamification-ийг аажмаар өргөтгөх боломжтой
+\end{itemize}
+
+\subsection{Системийн зохиомжийн дүгнэлт}
+
+Системийн зохиомж нь domain-driven байдлаар салангид боловч уялдаатай бүтэцтэй хийгдсэн. Frontend, backend, database, AI integration, moderation, code runner, games module зэрэг хэсгүүдийг тус тусын хариуцлагаар нь зохион байгуулснаар системийн өргөтгөх боломж, арчилгаа, туршилт хийх чадвар сайжирсан. Ийм зохиомж нь энэхүү дипломын ажлын системийг жижиг хэмжээний prototype бус, бодит хэрэглээнд ойр full-stack AI-based e-learning платформын түвшинд хүргэж байна.
+
+\section{API endpoint-уудын дэлгэрэнгүй тайлбар}
+
+\subsection{API зохион байгуулалтын зарчим}
+
+Системийн backend нь REST API зарчимд тулгуурлан зохион байгуулагдсан. API endpoint-уудыг domain-ийн дагуу бүлэглэж, `users`, `courses`, `progress`, `ai_engine`, `community`, `api` гэсэн хэсгүүдэд хуваасан. Энэ зохион байгуулалт нь endpoint-уудын зорилгыг ойлгомжтой болгож, frontend integration болон backend maintenance хийхэд хялбар болгосон.
+
+API-уудын ихэнх нь JSON бүтэцтэй request/response ашигладаг. Authentication шаардлагатай endpoint-ууд нь JWT access token ашиглан хамгаалагдсан бөгөөд frontend талд token хадгалж, request header-д дамжуулдаг.
+
+\subsection{Authentication API}
+
+Authentication API нь хэрэглэгчийн бүртгэл, нэвтрэлт, token refresh, profile мэдээлэл авах зэрэг үндсэн ажиллагааг хариуцна. Users app дотор дараах endpoint-ууд тодорхойлогдсон.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item `/users/register/`
+    \item `/users/login/`
+    \item `/users/refresh/`
+    \item `/users/me/`
+    \item `/users/save-level/`
+    \item `/users/profile/`
+    \item `/users/change-password/`
+\end{itemize}
+
+\subsubsection{Register endpoint}
+
+`/users/register/` endpoint нь шинэ хэрэглэгч бүртгэхэд ашиглагдана. Хэрэглэгчийн username, email, password зэрэг шаардлагатай мэдээллийг авч User model дээр шинэ бичлэг үүсгэнэ. Энэхүү endpoint нь frontend-ийн Register page-тэй холбогддог.
+
+\subsubsection{Login endpoint}
+
+`/users/login/` endpoint нь Simple JWT-ийн `TokenObtainPairView` ашиглан access token болон refresh token үүсгэнэ. Энэ нь backend authentication-ийн үндсэн цөм болж ажилладаг. Login амжилттай болсны дараа frontend хамгаалагдсан route-ууд руу шилжих боломжтой болно.
+
+\subsubsection{Refresh endpoint}
+
+`/users/refresh/` endpoint нь refresh token-оор шинэ access token авах зориулалттай. Ийм шийдэл нь session-ийг аюулгүй, үргэлжлэх боломжтой байдлаар удирдахад чухал юм.
+
+\subsubsection{Me endpoint}
+
+`/users/me/` endpoint нь одоогоор нэвтэрсэн хэрэглэгчийн мэдээллийг буцаадаг. Энэ нь dashboard, profile, course lock/unlock logic, skill level харах хэсэгт ашиглагдана.
+
+\subsection{Course API}
+
+Course API нь learning content-ийн үндсэн өгөгдөлтэй ажиллах endpoint-уудыг агуулдаг. Үүнд course list, home feed, search, track list, track-based course list, lesson detail, liked lesson зэрэг боломжууд орно.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item `/courses/`
+    \item `/courses/home-feed/`
+    \item `/courses/search/`
+    \item `/courses/tracks/`
+    \item `/courses/tracks/<track_id>/`
+    \item `/courses/liked-lessons/`
+    \item `/courses/lessons/<lesson_id>/toggle-like/`
+    \item `/courses/<course_id>/`
+    \item `/courses/lessons/<lesson_id>/`
+    \item `/courses/lessons/`
+\end{itemize}
+
+\subsubsection{Course list endpoint}
+
+`/courses/` endpoint нь бүх course жагсаалтыг буцаана. Энэ нь Courses page дээр нийт course-уудыг харахад ашиглагдана. Хэрэглэгчийн skill level-тэй уялдуулан lock/unlock logic frontend талд дүрслэгддэг.
+
+\subsubsection{Home feed endpoint}
+
+`/courses/home-feed/` endpoint нь dashboard дээр харуулах featured course, sections, recommended content зэрэг цуглуулсан өгөгдлийг буцаахад ашиглагддаг. Энэ нь home page-ийг олон request-ээс хамааралгүй, нэгдсэн data source-оор хангах давуу талтай.
+
+\subsubsection{Search endpoint}
+
+`/courses/search/` endpoint нь catalog хайлт хийхэд ашиглагддаг. Энэ нь course болон learning content-ийг хурдан олох боломж олгодог.
+
+\subsubsection{Track endpoints}
+
+`/courses/tracks/` болон `/courses/tracks/<track_id>/` endpoint-ууд нь learning track concept-ийг хэрэгжүүлдэг. Хэрэглэгч track-уудаар ангилсан course-уудыг харах боломжтой.
+
+\subsubsection{Liked lesson endpoints}
+
+`/courses/liked-lessons/` болон `/courses/lessons/<lesson_id>/toggle-like/` endpoint-ууд нь lesson like хийх, дуртай lesson-уудын жагсаалт авах ажиллагааг хариуцдаг. Энэ нь personalization-ийн энгийн хэлбэрийг бүрдүүлж байна.
+
+\subsubsection{Course detail ба Lesson detail endpoint}
+
+`/courses/<course_id>/` endpoint нь тухайн course-ийн дэлгэрэнгүй мэдээлэл болон lessons list-ийг агуулдаг. `/courses/lessons/<lesson_id>/` endpoint нь lesson content, practice information, media fields зэрэг дэлгэрэнгүй мэдээллийг буцаана. Lesson detail page-ийн ихэнх interaction энэ endpoint дээр тулгуурладаг.
+
+\subsection{Progress API}
+
+Progress API нь суралцагчийн ахиц, оноо, completion state, weekly activity зэрэг мэдээллийг боловсруулахад ашиглагдана.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item `/progress/lessons/<lesson_id>/`
+    \item `/progress/lessons/<lesson_id>/complete/`
+    \item `/progress/summary/`
+\end{itemize}
+
+\subsubsection{Lesson progress detail}
+
+`/progress/lessons/<lesson_id>/` endpoint нь тухайн lesson дээрх хэрэглэгчийн progress мэдээллийг буцаадаг. Хэрэв progress байхгүй бол backend автоматаар шинэ progress бичлэг үүсгэж буцаадаг. Энэ нь frontend талд null state үүсэхээс сэргийлдэг.
+
+\subsubsection{Complete lesson endpoint}
+
+`/progress/lessons/<lesson_id>/complete/` endpoint нь lesson completion бүртгэхэд ашиглагдана. Request дотор score ирсэн тохиолдолд түүнийг хадгалж, ирээгүй бол lesson-ийн default score ашиглана. Энэ endpoint ажилласны дараа:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item LessonProgress шинэчлэгдэнэ
+    \item completed\_lessons дахин тооцогдоно
+    \item total\_score aggregate байдлаар бодогдоно
+    \item skill\_level болон role update хийгдэнэ
+\end{itemize}
+
+\subsubsection{Progress summary endpoint}
+
+`/progress/summary/` endpoint нь dashboard болон progress page дээр хэрэгтэй нэгтгэсэн өгөгдлийг буцаадаг. Үүнд:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item username, email, role, skill level
+    \item total score, completed lessons
+    \item сүүлийн 7 хоногийн weekly activity
+    \item course тус бүрийн progress percent
+    \item course score
+\end{itemize}
+
+Энэ endpoint нь analytics харагдах байдлыг нэг API-аар хангаж байгаагаараа чухал юм.
+
+\subsection{AI API}
+
+AI API нь системийн онцгой үнэ цэнийг бүрдүүлж буй endpoint-уудыг агуулна.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item `/ai/lessons/<lesson_id>/summary/`
+    \item `/ai/lessons/<lesson_id>/quiz/`
+    \item `/ai/recommendations/`
+    \item `/ai/placement-test/`
+    \item `/ai/placement-test/submit/`
+    \item `/ai/level-up-test/`
+    \item `/ai/level-up-test/submit/`
+    \item `/ai/chat/`
+    \item `/ai/run-code/`
+\end{itemize}
+
+\subsubsection{Lesson summary endpoint}
+
+`/ai/lessons/<lesson_id>/summary/` endpoint нь lesson content-оос summary гаргана. Хэрэв Gemini API key байхгүй бол fallback summarize логик ажиллана. Энэ нь system availability-г хадгалах чухал шийдэл юм.
+
+\subsubsection{Lesson quiz endpoint}
+
+`/ai/lessons/<lesson_id>/quiz/` endpoint нь lesson content дээр тулгуурласан multiple-choice quiz үүсгэнэ. Асуулт бүр question, options, answer index, explanation агуулсан JSON бүтэцтэй байна.
+
+\subsubsection{Recommendations endpoint}
+
+`/ai/recommendations/` endpoint нь хэрэглэгчийн skill level болон completed lesson мэдээлэлд тулгуурлан хийгдээгүй lesson-ууд дундаас санал болгоно. Энэ нь recommendation logic-ийн анхны хэрэгжилт юм.
+
+\subsubsection{Placement test endpoints}
+
+`/ai/placement-test/` endpoint нь beginner түвшний content-оос placement test үүсгэнэ. `/ai/placement-test/submit/` endpoint нь хариултыг шалгаж percent тооцон хэрэглэгчийн skill level-ийг тогтооно.
+
+\subsubsection{Level-up test endpoints}
+
+`/ai/level-up-test/` endpoint нь хэрэглэгчийн одоогийн түвшинд суурилсан асуултуудыг үүсгэнэ. `/ai/level-up-test/submit/` endpoint нь тухайн шалгалтын хариуг шалгаж дараагийн түвшинд ахих эсэхийг шийднэ.
+
+\subsubsection{Chat endpoint}
+
+`/ai/chat/` endpoint нь AI chatbot-тай харилцах үндсэн endpoint юм. Энэ нь хэрэглэгчийн асуултад programming, lesson, learning guidance чиглэлээр хариу буцаахад ашиглагдана.
+
+\subsubsection{Run code endpoint}
+
+`/ai/run-code/` endpoint нь Python code runner-ийн backend endpoint юм. Frontend practice section-оос code илгээгдэж, backend талд sandboxed subprocess орчинд ажиллана. Output, error, exit code буцаадаг тул хэрэглэгч code-оо шалгах боломжтой.
+
+\subsection{Community API}
+
+Community API нь discussion interaction-ийг хариуцна.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item `/community/posts/`
+    \item `/community/comments/`
+\end{itemize}
+
+\subsubsection{Posts endpoint}
+
+`/community/posts/` endpoint нь lesson-тэй холбоотой discussion post-уудыг унших болон шинээр post үүсгэхэд ашиглагдана. Post үүсгэх үед moderation logic ажиллаж, текст allow, review, reject төлөвийн аль нэгээр ангилагдана.
+
+\subsubsection{Comments endpoint}
+
+`/community/comments/` endpoint нь comment унших болон үүсгэхэд ашиглагдана. Comment бүр moderation шалгалтаар орсноор community space-ийн чанар, аюулгүй байдлыг хадгалах боломж бүрддэг.
+
+\subsection{System health API}
+
+`/api/test/` endpoint нь backend service ажиллаж буй эсэхийг шалгах зориулалттай энгийн health-check endpoint юм. Local development болон deployment дараах шалгалтад ашиглахад тохиромжтой.
+
+\subsection{API security ба error handling}
+
+API design хийхдээ дараах зарчмуудыг баримталсан.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Authentication шаардлагатай endpoint-ууд дээр `IsAuthenticated` permission ашиглах
+    \item Алдаатай resource дээр 404 буцаах
+    \item Validation алдаа дээр 400 буцаах
+    \item AI generation амжилтгүй бол 500 эсвэл fallback response ашиглах
+    \item Session-based test management ашиглан cheating эрсдэлийг бууруулах
+\end{itemize}
+
+\subsection{API endpoint-уудын тайлбарын дүгнэлт}
+
+API endpoint-уудыг domain-аар нь бүлэглэн, responsibility-centered байдлаар зохион байгуулсан нь системийн архитектурын чухал давуу тал болсон. Authentication, course management, progress tracking, AI workflow, discussion, code execution зэрэг өөр өөр логикийг тусгаарласан нь frontend integration, backend maintenance, testing, future expansion зэрэгт эерэг нөлөө үзүүлж байна.
+
+\section{Хөгжүүлэлтийн орчин ба ашигласан технологи}
+
+Энэхүү дипломын ажлын системийг хөгжүүлэхдээ дараах технологиудыг ашигласан.
+
+\subsection{Backend технологи}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Python
+    \item Django
+    \item Django REST Framework
+    \item Simple JWT authentication
+\end{itemize}
+
+Django нь backend хөгжүүлэлтэд ашиглагдсан бөгөөд REST API хэлбэрээр frontend-тэй холбогдож, authentication, business logic болон өгөгдөл боловсруулалтыг хариуцсан. Төслийн requirements дотор `djangorestframework`, `djangorestframework-simplejwt`, `django-cors-headers`, `google-genai`, `Pillow`, `psycopg2-binary`, `channels`, `channels_redis` зэрэг сангуудыг ашигласан.
+
+\subsection{Frontend технологи}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item React
+    \item TypeScript
+    \item Vite
+    \item Axios
+    \item React Router
+\end{itemize}
+
+Frontend нь хэрэглэгчийн интерфейсийг үүсгэж, backend API-тай холбогдох үндсэн үүрэгтэй. `axios` ашиглан API дуудлага хийж, `react-router-dom`-оор page routing, `framer-motion`-оор transition animation, `react-player`-оор видео тоглуулах боломжийг хэрэгжүүлсэн.
+
+\subsection{Өгөгдлийн сан}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item PostgreSQL
+\end{itemize}
+
+PostgreSQL нь өгөгдлийн найдвартай хадгалалт, хүснэгт хоорондын холбоо, өргөтгөх боломж зэргээрээ тохиромжтой байсан.
+
+\subsection{DevOps болон ажиллуулах орчин}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Docker
+    \item Docker Compose
+\end{itemize}
+
+Docker ашигласнаар backend болон database-ийг container орчинд ажиллуулж, суулгалт болон deployment-ийг хялбарчилсан.
+
+\subsection{AI үйлчилгээ}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Gemini API
+\end{itemize}
+
+AI API ашигласнаар системд summary, quiz generation болон chatbot боломжуудыг нэмсэн.
+
+\section{Өгөгдлийн сангийн бүтэц}
+
+Системийн өгөгдлийн сангийн үндсэн entity-үүд нь User, Course, Lesson, LessonProgress зэрэг моделуудаас бүрдэнэ.
+
+\subsection{User модель}
+
+User модель нь Django-ийн AbstractUser-ийг өргөтгөн хөгжүүлсэн. Энэ модель нь зөвхөн username, email-аар хязгаарлагдахгүй бөгөөд суралцагчийн түвшин болон систем дэх оролцоог удирдахад шаардлагатай талбаруудыг агуулдаг. Дараах нэмэлт талбаруудтай.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item role
+    \item skill\_level
+    \item has\_placement\_test
+    \item total\_score
+    \item completed\_lessons
+\end{itemize}
+
+Эдгээр нь хэрэглэгчийн сургалтын явц, түвшин, систем доторх үүргийг тодорхойлоход ашиглагдана. Мөн `update_level_and_role()` функцээр нийт оноо болон дуусгасан хичээлийн тоонд үндэслэн skill level-ийг beginner, elementary, intermediate, advanced болгон шинэчилж, шаардлага хангасан үед role-ийг mentor болгож өөрчилдөг.
+
+\subsection{Course модель}
+
+Course модель нь курсын гарчиг, тайлбар, түвшин, thumbnail зураг, track, үүсгэсэн хэрэглэгчийн мэдээллийг хадгална. LearningTrack модель ашигласнаар курсуудыг замчлал буюу чиглэлээр ангилан харуулах боломжтой болсон.
+
+\subsection{Lesson модель}
+
+Lesson модель нь курс доторх хичээлийн агуулгыг хадгална. Зөвхөн текстэн content-оор хязгаарлагдахгүйгээр video, file, attachment, practice task, practice hint, expected output, bonus score зэрэг дадлага болон мультимедиа талбаруудыг хамруулсан. Үүнд:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item title
+    \item content
+    \item video\_url
+    \item file
+    \item attachment
+    \item order
+    \item score
+\end{itemize}
+
+\subsection{LessonProgress модель}
+
+LessonProgress нь суралцагч бүрийн хичээл тус бүрийн гүйцэтгэлийг хадгална. Энэ модель нь user-lesson хослол дээр unique байдлаар бүртгэгдэж, тухайн хичээл дууссан эсэх, авсан оноо, completion timestamp-ийг хадгалдаг.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item user
+    \item lesson
+    \item is\_completed
+    \item score
+    \item completed\_at
+\end{itemize}
+
+\section{Backend хөгжүүлэлт}
+
+\subsection{Authentication систем}
+
+Системийн authentication нь JSON Web Token дээр суурилсан. Хэрэглэгч нэвтрэх үед access token болон refresh token үүсч, frontend талд хадгалагдана. Энэ арга нь frontend-backend тусдаа архитектурт тохиромжтой бөгөөд API endpoint бүрийг `IsAuthenticated` permission-оор хамгаалах боломжийг олгосон.
+
+Backend дээр дараах endpoint-уудыг хэрэгжүүлсэн.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Register
+    \item Login
+    \item Refresh token
+    \item Current user мэдээлэл авах
+\end{itemize}
+
+\subsection{Course болон Lesson API}
+
+Course болон lesson-уудыг жагсаах, дэлгэрэнгүй авах, түвшнээр шүүх боломжтой API-уудыг хөгжүүлсэн. Course list API нь хэрэглэгчийн түвшинд тохируулан зөв course-уудыг харуулах боломжтой. Мөн LearningTrack-аар бүлэглэсэн course navigation, liked lesson хадгалах, lesson detail-аас practice task болон file attachment үзэх боломжтой байдлаар API-ууд өргөтгөсөн.
+
+\subsection{Progress систем}
+
+Progress систем нь lesson дууссан эсэх, авсан оноо, нийт score, completed lessons зэргийг тооцно. Lesson completion бүрт хэрэглэгчийн нийт score aggregate функцээр шинэчлэгдэж, skill level автомат байдлаар дахин тооцогддог. Түүнчлэн `progress_summary` endpoint нь сүүлийн 7 хоногийн activity, course тус бүрийн completion percent, course score зэрэг аналитик мэдээллийг буцаадаг.
+
+\subsection{Placement test болон Level-up test}
+
+Placement test нь анхны түвшинг тогтоох зориулалттай. Суралцагч placement test өгсний дараа beginner, intermediate, advanced гэсэн түвшнүүдийн аль нэгэнд оноогддог.
+
+Level-up test нь одоогийн түвшнээс дараагийн түвшинд ахих боломжийг олгоно. Энэ шалгалтын үр дүнг серверийн талд тооцоолж, хэрэглэгч хариуг өөрчлөхөөс сэргийлсэн.
+
+\subsection{AI engine backend}
+
+AI engine app нь зөвхөн chatbot бус, хэд хэдэн төрлийн AI workflow-ийг хариуцдаг төв модуль юм. Үүнд lesson summary, lesson quiz, practice task generation, recommended lessons, placement test, level-up test, community moderation, Python code runner зэрэг боломжууд орсон. Тус модуль дараах үүргийг гүйцэтгэнэ.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Lesson content-оос summary үүсгэх
+    \item Lesson content-оос quiz үүсгэх
+    \item Level source text цуглуулах
+    \item Placement болон level-up test-ийн асуулт үүсгэх
+    \item Chatbot хариу үүсгэх
+\end{itemize}
+
+\section{Frontend хөгжүүлэлт}
+
+\subsection{UI архитектур}
+
+Хэрэглэгчийн интерфэйс нь React болон TypeScript ашиглан бүрэлдэхүүн хэсэгт суурилсан байдлаар хөгжүүлэгдсэн. Үндсэн чиглүүлэгч бүтэц нь хамгаалагдсан зам ашиглан зөвхөн нэвтэрсэн хэрэглэгчид dashboard руу нэвтрэх боломжтой байхаар зохион байгуулагдсан. Router бүтэц дотор dashboard, courses, my-learning, tracks, lesson detail, progress, placement test, level-up test, community, games, liked lessons зэрэг page-ууд тодорхойлсон.
+
+\subsection{Dashboard интерфейс}
+
+Dashboard layout нь sidebar, header, content гэсэн үндсэн бүтэцтэй. Sidebar нь navigation хэсгийг хариуцаж, content хэсэгт тухайн хуудасны мэдээлэл харагдана. Home page дээр хэрэглэгчийн түвшин, featured content, track navigation, quick action зэрэг card layout-уудыг ашигласан.
+
+\subsection{Courses интерфейс}
+
+Courses хуудас нь хэрэглэгчийн түвшинтэй холбоотойгоор курсүүдийг харуулна. Түгжээтэй course-уудыг тусад нь ялган харуулж, хэрэглэгч зөвхөн өөрийн түвшний course-уудыг нээх боломжтой. Course card бүр дээр thumbnail, level pill, description, locked state, navigate button зэрэг UI элементүүдийг ашигласан.
+
+\subsection{Lesson detail интерфейс}
+
+Lesson detail хуудас нь төслийн хамгийн төвөгтэй интерфэйсүүдийн нэг бөгөөд text content, video, AI summary, AI quiz, discussion, practice task, code runner, lesson completion зэрэг боломжуудыг нэг дор нэгтгэсэн. Practice mode-ийг `python`, `web`, `text` гэж ангилж, тухайн хичээлийн агуулгаас хамааран өөр preview болон interaction үзүүлдэг. Үндсэн хэсгүүд нь:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хичээлийн текстэн агуулга
+    \item Видео
+    \item AI summary
+    \item AI quiz
+    \item Lesson completion
+\end{itemize}
+
+\subsection{Progress interface}
+
+Progress summary page нь хэрэглэгчийн нийт оноо, түвшин, гүйцэтгэсэн хичээлүүд, course тус бүрийн progress, AI recommendation-уудыг харуулдаг. Weekly activity-г chart хэлбэрээр гаргаж, хэрэглэгчийн сүүлийн өдрүүдийн идэвхийг визуал байдлаар харуулах боломжтой.
+
+\subsection{Chatbot интерфейс}
+
+Chatbot popup нь fixed button-оор нээгдэж, хэрэглэгчийн асуултад AI туслах хариулдаг байдлаар хэрэгжсэн. Энэ нь dashboard-аас тусдаа page руу орохгүйгээр system-wide тусламж үзүүлэх UX шийдэл болсон.
+
+\subsection{Games интерфейс}
+
+Games page нь course-оос тусдаа интерактив дасгалын catalog байдлаар хэрэгжсэн. Хэрэглэгч хэлээр нь filter хийж, search ашиглан game сонгож, тус бүрийн detail page руу орж тоглох боломжтой. CSS Flex Pond, HTML House Builder, Python Bot Quest зэрэг playable game-уудыг level-based puzzle байдлаар хэрэгжүүлсэн.
+
+\section{Хиймэл оюун ухааны интеграци}
+
+Энэхүү системийн онцлог нь AI-ийг зөвхөн chatbot хэлбэрээр бус, сургалтын логиктой холбон ашигласан явдал юм.
+
+\subsection{Summary generation}
+
+Lesson content дээр үндэслэн AI ашиглан хураангуй summary үүсгэнэ. Gemini API ажиллахгүй үед fallback summarize логик ашиглан эхний өгүүлбэрүүдээс товч summary буцаадаг. Энэ нь суралцагчдад урт текстийг богино хугацаанд ойлгоход тусалдаг.
+
+\subsection{Quiz generation}
+
+Lesson quiz нь хичээлийн агуулгаас автоматаар multiple-choice асуулт үүсгэдэг. Асуулт бүр 4 сонголт, зөв хариултын индекс, explanation талбартай JSON бүтэцтэй ирдэг. Энэ нь хичээл ойлгосон эсэхийг шалгах боломжийг олгоно.
+
+\subsection{Placement test generation}
+
+Placement test нь анхан түвшний курс болон хичээлийн агуулга дээр суурилан үүсдэг. Ингэснээр шалгалт нь системийн агуулгатай шууд холбоотой байдаг.
+
+\subsection{Level-up test generation}
+
+Level-up test нь одоогийн түвшний агуулга дээр суурилж дараагийн түвшинд ахих эсэхийг шийддэг.
+
+\subsection{Chatbot}
+
+AI chatbot нь programming, course, lesson болон суралцах зөвлөгөө өгөхөд ашиглагдана. Монгол хэл дээр харилцаж байгаа нь системийн хэрэглээний давуу тал болж байна. Үүнээс гадна community post болон comment дээр keyword moderation болон AI moderation хослуулсан нь агуулгын аюулгүй байдлыг нэмэгдүүлсэн.
+
+\section{Docker ашиглалт ба deployment}
+
+Системийг Docker ашиглан container-based орчинд ажиллуулсан. `docker-compose.yml` файлд PostgreSQL 16 суурьтай `db` service болон Django backend service-ийг тодорхойлж, healthcheck, volume, environment variable, timeout, code runner-ийн limit тохиргоог оруулсан.
+
+\subsection{Docker ашиглах болсон шалтгаан}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Орчны ялгааг багасгах
+    \item Сервер болон өгөгдлийн санг хурдан ажиллуулах
+    \item Deployment-ийг хялбарчлах
+    \item Dependency асуудлыг багасгах
+\end{itemize}
+
+\subsection{Docker Compose}
+
+Docker Compose ашиглан backend service болон PostgreSQL service-үүдийг нэг дороос ажиллуулсан. `wait-for-db.sh` ашиглан database бүрэн асах хүртэл backend-ийг хүлээлгэдэг шийдэл хийсэн. Энэ нь хөгжүүлэлтийн явцад системийг удирдахад хялбар болгосон.
+
+\subsection{Давуу тал}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Нэг командоор системийг ажиллуулах
+    \item Өгөгдлийн сангийн үйлчилгээг тусад нь удирдах
+    \item Хөгжүүлэлтийн орчин тогтвортой байх
+\end{itemize}
+
+\section{Туршилт ба үр дүн}
+
+Системийн үндсэн функцуудыг туршиж, дараах үр дүнгүүдийг авсан. Туршилтад authentication, course navigation, lesson detail, AI endpoints, progress calculation, placement test, level-up test, games page, discussion болон Docker орчны ажиллагааг хамруулсан.
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Login, Register, JWT authentication амжилттай ажилласан
+    \item Placement test-ийн асуултууд content-based байдлаар амжилттай үүссэн
+    \item Placement test-ийн үр дүн зөв тооцоологдож, хэрэглэгчийн skill level шинэчлэгдсэн
+    \item Level-up test серверийн талд шалгагдаж, session дээр хадгалсан асуултаар cheating хийх эрсдэл буурсан
+    \item Course, track, lesson navigation хэсгүүд түвшинд тохируулан зөв харагдсан
+    \item Lesson progress, нийт score, completed lesson count, weekly activity зэрэг үзүүлэлтүүд зөв тооцоологдсон
+    \item AI summary, quiz, practice task, chatbot болон moderation функцууд амжилттай ажилласан
+    \item Python code runner sandbox limit-тэйгээр ажиллаж, output болон error-ийг зөв буцаасан
+    \item Games page доторх playable game-ууд тусдаа detail page-тай болж, хэрэглэгчийн interaction сайжирсан
+    \item Docker орчинд backend болон database амжилттай асаж, local development тогтвортой ажилласан
+\end{itemize}
+
+\insertimage{zurag/image1z}{Системийн Login интерфейс}
+\insertimage{zurag/image2}{Системийн Register интерфейс}
+\insertimage{zurag/image3}{Placement test ажиллаж буй байдал}
+\insertimage{zurag/image4}{Placement test-ийн асуултыг дахин үүсгэж буй процесс}
+\insertimage{zurag/image5}{Placement test-ийн үр дүн болон түвшин тогтоосон байдал}
+\insertimage{zurag/image6}{Level-up test интерфейсийн жишээ}
+\insertimage{zurag/image7}{Course жагсаалтын дэлгэц}
+\insertimage{zurag/image8}{Суралцах чиглэлийн хуудас}
+\insertimage{zurag/image9}{Lesson хуудасны ерөнхий бүтэц}
+\insertimage{zurag/image10}{Lesson detail хуудасны дээд хэсэг}
+\insertimage{zurag/image11}{Progress хэсгийн дээд талын мэдээлэл}
+\insertimage{zurag/image12}{Progress хэсгийн доод талын аналитик мэдээлэл}
+\insertimage{zurag/image13}{AI Summary, AI Quiz болон Lesson detail-ийн доод хэсэг}
+\insertimage{zurag/image14}{AI chatbot ашиглаж буй интерфейс}
+\insertimage{zurag/image15}{Docker орчинд service-үүд амжилттай ассан төлөв}
+
+
+\section{Давуу тал ба цаашдын боломж}
+
+\subsection{Системийн давуу тал}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Хэрэглэгчийн түвшинд тохирсон шатлалтай сургалт
+    \item AI ашигласан summary, quiz, practice task, chatbot, moderation зэрэг олон талт боломжтой
+    \item Progress tracking, level update, recommendation зэрэг сургалтын логиктой
+    \item Full-stack architecture болон container-based deployment ашигласан
+    \item Docker орчинд ажиллах боломжтой
+\end{itemize}
+
+\subsection{Цаашид өргөтгөх боломж}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item Багшийн самбар нэмэх
+    \item Илүү олон AI recommendation алгоритм оруулах
+    \item Хэрэглэгчийн суралцах хэв маягийг шинжилдэг analytics module нэмэх
+    \item Mobile хувилбар болон responsive interaction-ийг илүү сайжруулах
+    \item Монгол хэлний AI model ашиглан summary, quiz, chatbot-ийн чанарыг сайжруулах
+    \item Community moderation болон gamification хэсгийг цаашид өргөтгөх
+\end{itemize}
+
+\section{Дүгнэлт}
+
+Энэхүү дипломын ажлын хүрээнд хиймэл оюунд суурилсан, шатлалтай сургалтын веб системийг амжилттай хөгжүүлсэн. Систем нь хэрэглэгчийн түвшин, progress, хичээлийн агуулга, practice task, AI response-д тулгуурлан ухаалаг байдлаар ажилладаг бөгөөд frontend, backend, database, AI service болон Docker орчныг нэгтгэсэн иж бүрэн шийдэл болсон.
+
+Тухайлбал, placement test болон level-up test нь хэрэглэгчийн түвшинг тодорхойлох, дараагийн шатанд ахих логикийг хэрэгжүүлж байгаа нь системийн гол онцлог юм. Мөн AI summary, lesson quiz, practice task, chatbot, moderation, code runner, games page зэрэг функцууд нь энэхүү системийг энгийн e-learning платформаас ялгаруулж байна.
+
+Иймээс энэхүү систем нь Монгол хэл дээр ажиллах боломжтой, цаашид өргөжүүлэн хөгжүүлэх боломжтой, орчин үеийн AI-based e-learning шийдлийн жишээ гэж үзэж болно.
+
+\begin{thebibliography}{9}
+
+\bibitem{django}
+Django Software Foundation,
+\textit{Django Documentation},
+\url{https://docs.djangoproject.com/}
+
+\bibitem{vite}
+Vite Team,
+\textit{Vite Documentation},
+\url{https://vite.dev/}
+
+\bibitem{drf}
+Django REST Framework,
+\textit{DRF Documentation},
+\url{https://www.django-rest-framework.org/}
+
+\bibitem{react}
+React Documentation,
+\textit{React Official Docs},
+\url{https://react.dev/}
+
+\bibitem{typescript}
+Microsoft,
+\textit{TypeScript Documentation},
+\url{https://www.typescriptlang.org/docs/}
+
+\bibitem{docker}
+Docker Inc.,
+\textit{Docker Documentation},
+\url{https://docs.docker.com/}
+
+\bibitem{postgres}
+PostgreSQL Global Development Group,
+\textit{PostgreSQL Documentation},
+\url{https://www.postgresql.org/docs/}
+
+\bibitem{gemini}
+Google AI,
+\textit{Gemini API Documentation},
+\url{https://ai.google.dev/}
+
+\bibitem{jwt}
+Auth0,
+\textit{Introduction to JSON Web Tokens},
+\url{https://jwt.io/introduction}
+
+\bibitem{elearning}
+Clark, R. C. and Mayer, R. E.,
+\textit{E-Learning and the Science of Instruction},
+John Wiley \& Sons.
+
+\end{thebibliography}
+
+\end{document}

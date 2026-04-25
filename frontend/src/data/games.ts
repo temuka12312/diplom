@@ -45,10 +45,10 @@ export const gamesCatalog: GameCatalogItem[] = [
     language: "Python",
     difficulty: "Beginner",
     description: "Command, loop, condition ашиглаад bot-оо зорилгод хүргэдэг puzzle.",
-    tagline: "Тун удахгүй.",
+    tagline: "print, variable, if, for, function-оо bot mission-оор сур.",
     duration: "8-12 мин",
-    levelCount: 8,
-    status: "coming-soon",
+    levelCount: 6,
+    status: "playable",
     searchTerms: ["python", "loop", "if", "bot", "quest", "function"],
   },
   {
@@ -76,6 +76,11 @@ export const gamesCatalog: GameCatalogItem[] = [
     searchTerms: ["java", "class", "object", "oop", "condition", "escape"],
   },
 ];
+
+export function getGameBySlug(slug?: string) {
+  if (!slug) return undefined;
+  return gamesCatalog.find((game) => game.slug === slug);
+}
 
 export function searchGames(query: string) {
   const normalized = query.trim().toLowerCase();

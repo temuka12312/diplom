@@ -17,6 +17,7 @@ import Community from "../pages/Community";
 import Tracks from "../pages/Tracks";
 import TrackCourses from "../pages/TrackCourses";
 import Games from "../pages/Games";
+import GameDetail from "../pages/GameDetail";
 
 import ChatWidget from "../components/ChatWidget";
 import DashboardLayout from "../components/DashboardLayout";
@@ -199,6 +200,16 @@ function Layout() {
             <ProtectedRoute>
               <DashboardLayout>
                 <Games />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/games/:slug"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <GameDetail />
               </DashboardLayout>
             </ProtectedRoute>
           }
