@@ -10,6 +10,7 @@ import {
 import useAuth from "../hooks/useAuth";
 import LoadingState from "../components/LoadingState";
 import TestResultModal from "../components/TestResultModal";
+import { getLevelLabel } from "../utils/levels";
 import "../style/test.css";
 
 export default function PlacementTest() {
@@ -147,7 +148,7 @@ export default function PlacementTest() {
             <div className="placement-metric-card">
               <span>Үр дүн</span>
               <strong>Тохирсон түвшин</strong>
-              <p>Beginner, Elementary, Intermediate, Advanced ангиллаас автоматаар сонгоно.</p>
+              <p>Анхан, Суурь, Дунд, Ахисан ангиллаас автоматаар сонгоно.</p>
             </div>
             <div className="placement-metric-grid">
               <div className="placement-mini-stat">
@@ -266,7 +267,7 @@ export default function PlacementTest() {
             correct={scoreData.correct}
             total={scoreData.total}
             percent={scoreData.percent}
-            levelLabel={scoreData.level}
+            levelLabel={getLevelLabel(scoreData.level)}
             tone="info"
             message="Энэ түвшинд тань тохирсон хичээлүүдийг систем автоматаар санал болгоно."
             actionLabel="Dashboard руу очих"

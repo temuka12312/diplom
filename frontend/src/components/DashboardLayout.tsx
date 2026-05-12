@@ -320,6 +320,7 @@ export default function DashboardLayout({ children }: Props) {
             {!collapsed && (
               <>
                 <span>© 2026 LOTUS Learn.</span>
+                <span> From Impersation </span>
                 <span>All rights reserved.</span>
               </>
             )}

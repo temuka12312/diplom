@@ -71,7 +71,7 @@ export default function TestResultModal({
           <div className={`test-result-icon ${tone}`}>{toneIcons[tone]}</div>
 
           <div className="test-result-copy">
-            <p className="test-result-kicker">Assessment Complete</p>
+            <p className="test-result-kicker">Шалгалт дууслаа</p>
             <h2>{title}</h2>
             <p className="test-result-message">{message}</p>
           </div>

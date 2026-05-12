@@ -13,6 +13,7 @@ from .models import LessonProgress
 from .serializers import LessonProgressSerializer
 from courses.models import Course, Lesson
 from users.models import User
+from ai_engine.views import ensure_practice_task_for_lesson, llm_review_practice_submission
 
 
 def clamp_score(value, minimum=0.0, maximum=100.0):
@@ -91,6 +92,62 @@ def complete_lesson(request, lesson_id):
 
     serializer = LessonProgressSerializer(progress)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def submit_practice_task(request, lesson_id):
+    try:
+        lesson = Lesson.objects.get(pk=lesson_id)
+    except Lesson.DoesNotExist:
+        return Response({"detail": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    lesson = ensure_practice_task_for_lesson(lesson)
+
+    progress, created = LessonProgress.objects.get_or_create(
+        user=request.user,
+        lesson=lesson,
+    )
+
+    answer = (request.data.get("answer") or "").strip()
+    if not answer:
+        return Response(
+            {
+                "accepted": False,
+                "feedback": "Эхлээд даалгаврын хариултаа бичнэ үү.",
+                "progress": LessonProgressSerializer(progress).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    review = llm_review_practice_submission(lesson, answer)
+    accepted = bool(review.get("accepted"))
+    feedback = str(review.get("feedback", "")).strip() or "Даалгаврын хариултыг шалгалаа."
+
+    progress.practice_answer = answer
+    progress.practice_feedback = feedback
+
+    if accepted:
+        progress.practice_submitted = True
+        progress.practice_submitted_at = timezone.now()
+
+    progress.save(
+        update_fields=[
+            "practice_answer",
+            "practice_feedback",
+            "practice_submitted",
+            "practice_submitted_at",
+        ]
+    )
+
+    return Response(
+        {
+            "accepted": accepted,
+            "feedback": feedback,
+            "progress": LessonProgressSerializer(progress).data,
+        },
+        status=status.HTTP_200_OK,
+    )
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

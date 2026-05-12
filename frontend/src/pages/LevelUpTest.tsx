@@ -9,6 +9,7 @@ import {
 import useAuth from "../hooks/useAuth";
 import LoadingState from "../components/LoadingState";
 import TestResultModal from "../components/TestResultModal";
+import { getLevelClass, getLevelLabel } from "../utils/levels";
 
 export default function LevelUpTest() {
   const navigate = useNavigate();
@@ -117,12 +118,16 @@ export default function LevelUpTest() {
       <div className="card level-info-card">
         <div className="level-info-grid">
           <div>
-            <p className="mini-label">Current level</p>
-            <span className="level-pill pill-beginner">{currentLevel}</span>
+            <p className="mini-label">Одоогийн түвшин</p>
+            <span className={`level-pill ${getLevelClass(currentLevel)}`}>
+              {getLevelLabel(currentLevel)}
+            </span>
           </div>
           <div>
-            <p className="mini-label">Target level</p>
-            <span className="level-pill level-pill-target">{nextLevel}</span>
+            <p className="mini-label">Зорилтот түвшин</p>
+            <span className={`level-pill ${getLevelClass(nextLevel)}`}>
+              {getLevelLabel(nextLevel)}
+            </span>
           </div>
         </div>
       </div>
@@ -154,7 +159,7 @@ export default function LevelUpTest() {
 
       <div className="action-row center">
         <button className="button" onClick={handleSubmit}>
-          Submit Level-Up Test
+          Шалгалт илгээх
         </button>
       </div>
 
@@ -165,14 +170,14 @@ export default function LevelUpTest() {
             correct={scoreData.correct}
             total={scoreData.total}
             percent={scoreData.percent}
-            levelLabel={passed ? nextLevel : currentLevel}
+            levelLabel={getLevelLabel(passed ? nextLevel : currentLevel)}
             tone={passed ? "success" : "warning"}
             message={
               passed
-                ? `Гоё. Та дараагийн ${nextLevel} түвшин рүү амжилттай ахилаа.`
+                ? `Та дараагийн ${getLevelLabel(nextLevel)} түвшин рүү амжилттай ахилаа.`
                 : "Та энэ удаа тэнцсэнгүй. Хичээлээ давтаад дахин оролдоно уу."
             }
-            actionLabel="Progress руу буцах"
+            actionLabel="Ахиц руу буцах"
             onClose={handleCloseModal}
           />
         )}

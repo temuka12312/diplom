@@ -3,23 +3,8 @@ import { Link } from "react-router-dom";
 import { getCourses, getMyLevelCourses, resolveCourseThumbnail } from "../api/courses";
 import { meApi } from "../api/auth";
 import type { Course } from "../api/courses";
+import { getLevelClass, getLevelLabel, levelRank, type UserLevel } from "../utils/levels";
 import "../style/courses.css";
-
-type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
-
-const levelRank: Record<UserLevel, number> = {
-  beginner: 1,
-  elementary: 2,
-  intermediate: 3,
-  advanced: 4,
-};
-
-const levelLabels: Record<UserLevel, string> = {
-  beginner: "Анхан",
-  elementary: "Суурь",
-  intermediate: "Дунд",
-  advanced: "Ахисан",
-};
 
 export default function Courses() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -49,17 +34,6 @@ export default function Courses() {
   const isLocked = (courseLevel: string) => {
     const cLevel = (courseLevel as UserLevel) || "beginner";
     return levelRank[cLevel] > levelRank[userLevel];
-  };
-
-  const getLevelClass = (level: string) => {
-    if (level === "beginner") return "pill-beginner";
-    if (level === "elementary") return "pill-elementary";
-    if (level === "intermediate") return "pill-intermediate";
-    return "pill-advanced";
-  };
-
-  const getLevelLabel = (level: string) => {
-    return levelLabels[(level as UserLevel) || "beginner"] || "Анхан";
   };
 
   return (

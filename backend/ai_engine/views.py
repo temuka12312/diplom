@@ -1,10 +1,12 @@
 import os
 import json
 import sys
+import re
 
 import tempfile
 import subprocess
 from pathlib import Path
+from difflib import SequenceMatcher
 
 from google import genai
 
@@ -216,6 +218,111 @@ def llm_practice_task(text: str) -> dict:
             "hint": "Хичээлийн үндсэн ойлголтыг ашиглан бодож гүйцэтгэнэ.",
             "expected_output": "Өөрийн хариулт эсвэл кодоо зөв логикоор бичсэн байна.",
         }
+
+
+def normalize_text(value: str) -> str:
+    return re.sub(r"\s+", " ", (value or "").strip().lower())
+
+
+def heuristic_practice_review(lesson: Lesson, answer: str) -> dict:
+    normalized_answer = normalize_text(answer)
+    if len(normalized_answer) < 8:
+        return {
+            "accepted": False,
+            "feedback": "Хариулт хэт богино байна. Даалгаврын утгатай хариуг дэлгэрэнгүй бичнэ үү.",
+        }
+
+    expected = normalize_text(lesson.practice_expected_output)
+    task = normalize_text(lesson.practice_description)
+
+    generic_markers = (
+        "өөрийн хариулт",
+        "зөв логикоор",
+        "тайлбарлаж бич",
+        "practice task",
+    )
+    has_specific_expected = bool(expected) and not any(marker in expected for marker in generic_markers)
+
+    if has_specific_expected:
+        similarity = SequenceMatcher(None, normalized_answer, expected).ratio()
+        expected_words = {
+            word for word in re.findall(r"[a-zA-Zа-яА-Я0-9_+#.-]+", expected) if len(word) >= 3
+        }
+        overlap = 0.0
+        if expected_words:
+            overlap = len(expected_words.intersection(set(re.findall(r"[a-zA-Zа-яА-Я0-9_+#.-]+", normalized_answer)))) / len(expected_words)
+
+        if similarity >= 0.55 or overlap >= 0.6:
+            return {
+                "accepted": True,
+                "feedback": "Даалгаврын хариулт expected result-тэй нийцэж байна.",
+            }
+
+        return {
+            "accepted": False,
+            "feedback": "Хариулт expected result-тэй хангалттай нийцсэнгүй. Даалгаврын шаардлагаа дахин шалгана уу.",
+        }
+
+    task_keywords = {
+        word for word in re.findall(r"[a-zA-Zа-яА-Я0-9_+#.-]+", task) if len(word) >= 4
+    }
+    answer_keywords = set(re.findall(r"[a-zA-Zа-яА-Я0-9_+#.-]+", normalized_answer))
+
+    if task_keywords:
+        overlap = len(task_keywords.intersection(answer_keywords)) / len(task_keywords)
+        if overlap < 0.2 and len(answer_keywords) < 5:
+            return {
+                "accepted": False,
+                "feedback": "Хариулт даалгавартай хангалттай холбоогүй байна. Илүү тодорхой, даалгаварт нийцсэн хариулт бичнэ үү.",
+            }
+
+    return {
+        "accepted": True,
+        "feedback": "Даалгаврын хариулт хүлээн авлаа.",
+    }
+
+
+def llm_review_practice_submission(lesson: Lesson, answer: str) -> dict:
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return heuristic_practice_review(lesson, answer)
+
+    try:
+        client = genai.Client(api_key=api_key)
+        prompt = (
+            "Та e-learning платформын практик даалгаврын шалгагч байна.\n"
+            "Сурагчийн хариултыг даалгаврын шаардлагатай тулган үнэл.\n"
+            "Зөвхөн JSON буцаа.\n\n"
+            "{\n"
+            '  "accepted": true,\n'
+            '  "feedback": "Товч тайлбар"\n'
+            "}\n\n"
+            "Шалгах дүрэм:\n"
+            "1. Хоосон, хэт богино, даалгаварт хамааралгүй хариуг accepted=false болго.\n"
+            "2. Код эсвэл тайлбар нь даалгаврын зорилгыг хангаж байвал accepted=true болго.\n"
+            "3. Feedback нь Монгол хэл дээр, товч, ойлгомжтой байна.\n\n"
+            f"Lesson title: {lesson.title}\n"
+            f"Lesson content: {lesson.content}\n"
+            f"Practice title: {lesson.practice_title}\n"
+            f"Practice description: {lesson.practice_description}\n"
+            f"Practice hint: {lesson.practice_hint}\n"
+            f"Expected output: {lesson.practice_expected_output}\n"
+            f"Student answer:\n{answer}\n"
+        )
+        resp = client.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=prompt,
+        )
+        raw = (resp.text or "").strip()
+        raw = raw.replace("```json", "").replace("```", "").strip()
+        data = json.loads(raw)
+        accepted = bool(data.get("accepted"))
+        feedback = str(data.get("feedback", "")).strip()
+        if not feedback:
+            feedback = "Даалгаврын хариултыг шалгалаа."
+        return {"accepted": accepted, "feedback": feedback}
+    except Exception:
+        return heuristic_practice_review(lesson, answer)
 
 
 def generate_practice_task_from_lesson(lesson: Lesson) -> dict:

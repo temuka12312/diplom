@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { Lesson } from "../api/courses";
 import { runPythonCode } from "../api/compiler";
-import { completeLesson, getLessonProgress } from "../api/progress";
+import {
+  completeLesson,
+  getLessonProgress,
+  submitPracticeTask,
+} from "../api/progress";
 import type { LessonProgress } from "../api/progress";
 import {
   getLessonQuiz,
@@ -19,7 +23,7 @@ import { getApiErrorMessage } from "../api/axios";
 import "../style/lesson-detail.css";
 import { getLesson, toggleLessonLike } from "../api/courses";
 
-type PracticeMode = "python" | "web" | "text";
+type PracticeMode = "python" | "web";
 
 export default function LessonDetail() {
   const { courseId, lessonId } = useParams<{
@@ -122,7 +126,7 @@ export default function LessonDetail() {
       return "python";
     }
 
-    return "text";
+    return "python";
   }, [lesson]);
 
   const previewDocument = useMemo(() => {
@@ -264,6 +268,10 @@ export default function LessonDetail() {
     `;
   }, [practiceAnswer, practiceMode, lesson]);
 
+  const editorFilename = useMemo(() => {
+    return practiceMode === "web" ? "index.html" : "main.py";
+  }, [practiceMode]);
+
   const canMarkDone = useMemo(() => {
     if (!lesson || isCompleted) return false;
 
@@ -304,6 +312,11 @@ export default function LessonDetail() {
         if (progressData) {
           setProgress(progressData);
           setIsCompleted(progressData.is_completed);
+          setPracticeSubmitted(Boolean(progressData.practice_submitted));
+          setPracticeFeedback(progressData.practice_feedback || null);
+          if (progressData.practice_answer) {
+            setPracticeAnswer(progressData.practice_answer);
+          }
           if (typeof progressData.score === "number") {
             setQuizScore(progressData.score);
           }
@@ -391,7 +404,9 @@ export default function LessonDetail() {
     setQuizScore(percent);
   };
 
-  const handlePracticeSubmit = () => {
+  const handlePracticeSubmit = async () => {
+    if (!lessonId) return;
+
     const value = practiceAnswer.trim();
 
     if (!value) {
@@ -399,10 +414,22 @@ export default function LessonDetail() {
       return;
     }
 
-    setPracticeSubmitted(true);
-    setPracticeFeedback(
-      "Даалгавар submit хийгдлээ. Одоо хичээлээ дууссан гэж тэмдэглэх боломжтой."
-    );
+    try {
+      const res = await submitPracticeTask(lessonId, value);
+      setProgress(res.progress);
+      setPracticeSubmitted(Boolean(res.progress.practice_submitted));
+      setPracticeFeedback(res.feedback);
+      if (!res.accepted) {
+        return;
+      }
+    } catch (err) {
+      const message = getApiErrorMessage(
+        err,
+        "Даалгаврын хариулт шаардлага хангаагүй байна."
+      );
+      setPracticeSubmitted(false);
+      setPracticeFeedback(message);
+    }
   };
 
   const handleRunCode = async () => {
@@ -506,7 +533,7 @@ export default function LessonDetail() {
       <div className="lesson-top-grid">
         <div className="card lesson-hero-card">
           <div className="lesson-hero-top">
-            <div>
+            <div className="lesson-hero-copy">
               <span className="page-kicker">Lesson</span>
               <h1 className="page-title lesson-title">{lesson.title}</h1>
             </div>
@@ -693,11 +720,11 @@ export default function LessonDetail() {
                 }`}
               >
                 <div className="practice-editor-box">
-                  <div className="practice-editor-head">practice.txt</div>
+                  <div className="practice-editor-head">{editorFilename}</div>
                   <textarea
                     className="practice-editor"
                     rows={8}
-                    placeholder="Энд хариулт, код эсвэл бодолтоо бич..."
+                    placeholder="Энд кодоо бич..."
                     value={practiceAnswer}
                     onChange={(e) => setPracticeAnswer(e.target.value)}
                     disabled={practiceSubmitted}

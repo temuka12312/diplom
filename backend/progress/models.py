@@ -10,6 +10,10 @@ class LessonProgress(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="progress")
     is_completed = models.BooleanField(default=False)
     score = models.FloatField(default=0)
+    practice_answer = models.TextField(blank=True, default="")
+    practice_submitted = models.BooleanField(default=False)
+    practice_feedback = models.TextField(blank=True, default="")
+    practice_submitted_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:

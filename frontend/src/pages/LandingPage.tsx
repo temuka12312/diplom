@@ -267,7 +267,7 @@ export default function LandingPage() {
         </div>
 
         <div className="landing-footer-bottom">
-          <span>© 2026 LOTUS Learn. All rights reserved.</span>
+          <span>© 2026 LOTUS Learn From Impersation. All rights reserved.</span>
           <span>Built for modern adaptive e-learning.</span>
         </div>
       </footer>

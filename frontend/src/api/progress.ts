@@ -4,7 +4,11 @@ export interface LessonProgress {
   id: number;
   lesson: number;
   is_completed: boolean;
-  score: number;              
+  score: number;
+  practice_answer: string;
+  practice_submitted: boolean;
+  practice_feedback: string;
+  practice_submitted_at: string | null;
   completed_at: string | null;
 }
 
@@ -36,6 +40,22 @@ export const completeLesson = async (
 ): Promise<LessonProgress> => {
   const res = await api.post(`/progress/lessons/${lessonId}/complete/`, {
     score,
+  });
+  return res.data;
+};
+
+export interface PracticeSubmitResponse {
+  accepted: boolean;
+  feedback: string;
+  progress: LessonProgress;
+}
+
+export const submitPracticeTask = async (
+  lessonId: number | string,
+  answer: string
+): Promise<PracticeSubmitResponse> => {
+  const res = await api.post(`/progress/lessons/${lessonId}/submit-practice/`, {
+    answer,
   });
   return res.data;
 };

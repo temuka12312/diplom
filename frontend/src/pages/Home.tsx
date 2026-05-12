@@ -8,18 +8,10 @@ import {
 } from "../api/courses";
 import useAuth from "../hooks/useAuth";
 import LoadingState from "../components/LoadingState";
-
-type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
-
-const levelLabels: Record<UserLevel, string> = {
-  beginner: "Анхан",
-  elementary: "Суурь",
-  intermediate: "Дунд",
-  advanced: "Ахисан",
-};
+import { getLevelLabel } from "../utils/levels";
 
 function CourseTile({ course }: { course: Course }) {
-  const levelText = levelLabels[(course.level as UserLevel) || "beginner"] || "Анхан";
+  const levelText = getLevelLabel(course.level);
   const [expanded, setExpanded] = useState(false);
   const thumbnail = resolveCourseThumbnail(course.thumbnail);
 
@@ -74,8 +66,7 @@ export default function Home() {
       .catch(() => setError("Home feed ачаалж чадсангүй."));
   }, []);
 
-  const levelText =
-    levelLabels[(user?.skill_level as UserLevel) || "beginner"] || "Анхан";
+  const levelText = getLevelLabel(user?.skill_level);
 
   if (error) {
     return (

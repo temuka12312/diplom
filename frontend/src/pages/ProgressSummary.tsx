@@ -9,16 +9,8 @@ import { getRecommendations } from "../api/ai";
 import type { RecommendedLesson } from "../api/ai";
 import { Link } from "react-router-dom";
 import LoadingState from "../components/LoadingState";
+import { getLevelLabel, type UserLevel } from "../utils/levels";
 import "../style/ProgressSummary.css";
-
-type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
-
-const levelLabels: Record<UserLevel, string> = {
-  beginner: "Анхан",
-  elementary: "Суурь",
-  intermediate: "Дунд",
-  advanced: "Ахисан",
-};
 
 function WeeklyActivityChart({ activity }: { activity: WeeklyActivity[] }) {
   const maxCount = Math.max(...activity.map((item) => item.lesson_count), 1);
@@ -136,7 +128,7 @@ export default function ProgressSummaryPage() {
   };
 
   const userLevel = (data.skill_level as UserLevel) || "beginner";
-  const levelText = levelLabels[userLevel] || "Анхан";
+  const levelText = getLevelLabel(userLevel);
 
   return (
     <div className="progress-page">
@@ -166,7 +158,7 @@ export default function ProgressSummaryPage() {
               <strong>{data.role ?? "student"}</strong>
             </div>
             <div className="profile-row">
-              <span>Skill level</span>
+              <span>Түвшин</span>
               <strong>{levelText}</strong>
             </div>
             <div className="profile-row">
@@ -180,19 +172,19 @@ export default function ProgressSummaryPage() {
           </div>
 
           <div className="level-up-box">
-            <h3 className="level-up-title">Level Progress</h3>
+            <h3 className="level-up-title">Түвшний ахиц</h3>
 
             {userLevel !== "advanced" ? (
               <>
                 <p className="level-up-text">
-                  Take a level-up test to unlock higher-level courses.
+                  Дараагийн түвшний шалгалт өгч, илүү ахисан курсүүдийг нээгээрэй.
                 </p>
                 <Link to="/level-up-test" className="level-up-link">
-                  <button className="button level-up-button">Take Level-Up Test</button>
+                  <button className="button level-up-button">Түвшин ахиулах шалгалт өгөх</button>
                 </Link>
               </>
             ) : (
-              <p className="level-up-max">You are already at the highest level.</p>
+              <p className="level-up-max">Та аль хэдийн хамгийн дээд түвшинд хүрсэн байна.</p>
             )}
           </div>
         </section>
@@ -306,7 +298,7 @@ export default function ProgressSummaryPage() {
                     >
                       {r.lesson_title}
                     </Link>
-                    <span className="recs-level">({r.level})</span>
+                    <span className="recs-level">({getLevelLabel(r.level)})</span>
                   </li>
                 ))}
               </ul>

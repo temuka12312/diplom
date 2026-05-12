@@ -7,6 +7,7 @@ import {
 import { getProgressSummary, type ProgressSummary } from "../api/progress";
 import useAuth from "../hooks/useAuth";
 import LoadingState from "../components/LoadingState";
+import { getLevelLabel } from "../utils/levels";
 import "../style/profile.css";
 
 function resolveMediaUrl(image?: string | null) {
@@ -14,15 +15,6 @@ function resolveMediaUrl(image?: string | null) {
   if (image.startsWith("http://") || image.startsWith("https://")) return image;
   return `${API_ORIGIN}${image}`;
 }
-
-type UserLevel = "beginner" | "elementary" | "intermediate" | "advanced";
-
-const levelLabels: Record<UserLevel, string> = {
-  beginner: "Анхан",
-  elementary: "Суурь",
-  intermediate: "Дунд",
-  advanced: "Ахисан",
-};
 
 export default function Profile() {
   const { user, refreshUser, setUser } = useAuth();
@@ -70,7 +62,7 @@ export default function Profile() {
     setAvatarPreview(resolveMediaUrl(user?.avatar_url));
   }, [avatarFile, user?.avatar_url]);
 
-  const levelText = levelLabels[(user?.skill_level as UserLevel) || "beginner"] || "Анхан";
+  const levelText = getLevelLabel(user?.skill_level);
 
   const handleProfileSave = async (event: React.FormEvent) => {
     event.preventDefault();

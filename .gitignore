@@ -6,6 +6,9 @@
 .env
 .env.*
 !.env.example
+dotenv
+*env
+/env
 
 # Python
 env/
