@@ -1,8 +1,4 @@
-# diplom
-
-### clone hiihiig horiglno suhee sankii ganaa!!!!
-
-## Domain deploy checklist
+# Domain deploy checklist
 
 Backend `.env` дээр:
 
