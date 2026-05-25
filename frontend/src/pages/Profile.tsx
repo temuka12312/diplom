@@ -3,9 +3,11 @@ import { API_ORIGIN, getApiErrorMessage } from "../api/axios";
 import {
   changePasswordApi,
   updateProfileApi,
+  type MeResponse,
 } from "../api/auth";
 import { getProgressSummary, type ProgressSummary } from "../api/progress";
 import useAuth from "../hooks/useAuth";
+import type { AuthContextValue } from "../hooks/authContext";
 import LoadingState from "../components/LoadingState";
 import { getLevelLabel } from "../utils/levels";
 import "../style/profile.css";
@@ -16,53 +18,95 @@ function resolveMediaUrl(image?: string | null) {
   return `${API_ORIGIN}${image}`;
 }
 
+function createProfileForm(user: MeResponse) {
+  return {
+    username: user.username,
+    email: user.email,
+    nickname: user.nickname || user.display_name || "",
+  };
+}
+
+interface ProfileContentProps {
+  user: MeResponse;
+  summary: ProgressSummary;
+  refreshUser: AuthContextValue["refreshUser"];
+  setUser: AuthContextValue["setUser"];
+}
+
 export default function Profile() {
   const { user, refreshUser, setUser } = useAuth();
   const [summary, setSummary] = useState<ProgressSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    getProgressSummary()
+      .then(setSummary)
+      .catch(() => setLoadError("Профайлын мэдээллийг ачаалж чадсангүй."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (!user || loading) {
+    return (
+      <div className="container page-shell">
+        <LoadingState
+          title="Profile бэлдэж байна"
+          subtitle="Таны account болон ахицын мэдээллийг нэгтгэж байна..."
+        />
+      </div>
+    );
+  }
+
+  if (!summary) {
+    return (
+      <div className="container page-shell profile-page">
+        <p className="profile-feedback error">
+          {loadError || "Профайлын мэдээллийг ачаалж чадсангүй."}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <ProfileContent
+      key={user.id}
+      user={user}
+      summary={summary}
+      refreshUser={refreshUser}
+      setUser={setUser}
+    />
+  );
+}
+
+function ProfileContent({ user, summary, refreshUser, setUser }: ProfileContentProps) {
   const [profileMessage, setProfileMessage] = useState("");
   const [passwordMessage, setPasswordMessage] = useState("");
   const [error, setError] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    username: "",
-    email: "",
-    nickname: "",
-  });
+  const [avatarObjectUrl, setAvatarObjectUrl] = useState<string | null>(null);
+  const [form, setForm] = useState(() => createProfileForm(user));
   const [passwords, setPasswords] = useState({
     current_password: "",
     new_password: "",
   });
 
   useEffect(() => {
-    if (user) {
-      setForm({
-        username: user.username,
-        email: user.email,
-        nickname: user.nickname || user.display_name || "",
-      });
-    }
-  }, [user]);
+    return () => {
+      if (avatarObjectUrl) {
+        URL.revokeObjectURL(avatarObjectUrl);
+      }
+    };
+  }, [avatarObjectUrl]);
 
-  useEffect(() => {
-    getProgressSummary()
-      .then(setSummary)
-      .catch(() => setError("Профайлын мэдээллийг ачаалж чадсангүй."))
-      .finally(() => setLoading(false));
-  }, []);
+  const levelText = getLevelLabel(user.skill_level);
+  const avatarPreview = avatarObjectUrl || resolveMediaUrl(user.avatar_url);
 
-  useEffect(() => {
-    if (avatarFile) {
-      const objectUrl = URL.createObjectURL(avatarFile);
-      setAvatarPreview(objectUrl);
-      return () => URL.revokeObjectURL(objectUrl);
-    }
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nextFile = event.target.files?.[0] ?? null;
 
-    setAvatarPreview(resolveMediaUrl(user?.avatar_url));
-  }, [avatarFile, user?.avatar_url]);
-
-  const levelText = getLevelLabel(user?.skill_level);
+    setAvatarFile(nextFile);
+    setAvatarObjectUrl(nextFile ? URL.createObjectURL(nextFile) : null);
+  };
 
   const handleProfileSave = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -82,6 +126,7 @@ export default function Profile() {
       setUser(updatedUser);
       setProfileMessage("Профайл амжилттай шинэчлэгдлээ.");
       setAvatarFile(null);
+      setAvatarObjectUrl(null);
       await refreshUser();
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, "Профайл шинэчлэх үед алдаа гарлаа."));
@@ -101,17 +146,6 @@ export default function Profile() {
       setError(getApiErrorMessage(err, "Нууц үг солих үед алдаа гарлаа."));
     }
   };
-
-  if (!user || loading || !summary) {
-    return (
-      <div className="container page-shell">
-        <LoadingState
-          title="Profile бэлдэж байна"
-          subtitle="Таны account болон ахицын мэдээллийг нэгтгэж байна..."
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="container page-shell profile-page">
@@ -229,7 +263,7 @@ export default function Profile() {
                     className="input profile-file-input"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                    onChange={handleAvatarChange}
                   />
                   <small>
                     {avatarFile ? avatarFile.name : "PNG, JPG эсвэл WEBP зураг сонгоно."}

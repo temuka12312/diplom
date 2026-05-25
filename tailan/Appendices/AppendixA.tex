@@ -1,39 +1,196 @@
-% Хавсралт A
 
-%\chapter{Хавсралтын нэр} % Main appendix title
+\label{AppendixA}
+\chapter*{Хавсралт A. Системийн нэмэлт материал}
 
-\label{AppendixA} % For referencing this appendix elsewhere, use \ref{AppendixA}
-\chapter*{Чухал кодын хэсгүүд}
-\section*{Хэрэглэгчийн бүртгэл үүсгэх кодын хэсэг}
+\section*{A.1 Чухал кодын хэсгүүд}
+Энэ хавсралтад тайланд бүрэн оруулахад хэт уртдах боловч системийн инженерчлэлийн шийдлийг тайлбарлахад чухал кодын хэсгүүдийн жишээг оруулав. Хавсралтын зорилго нь үндсэн бүлгүүдэд өгүүлсэн санааг бодит хэрэгжилттэй нь холбож өгөхөд оршино.
+
+\subsection*{Хиймэл оюуны хураангуйн нөөц логикийн жишээ}
+Доорх кодын хэсэг нь хиймэл оюуны үйлчилгээ ажиллахгүй үед хичээлийн агуулгаас энгийн хураангуй үүсгэх нөөц логикийг харуулна. Энэ нь системийг гаднын хиймэл оюуны үйлчилгээнээс бүрэн хамааралтай болгохгүй байх инженерчлэлийн шийдэл юм.
 
 \begin{lstlisting}
-import numpy as np
-    
-def incmatrix(genl1,genl2):
-    m = len(genl1)
-    n = len(genl2)
-    M = None #to become the incidence matrix
-    VT = np.zeros((n*m,1), int)  #dummy variable
-    
-    #compute the bitwise xor matrix
-    M1 = bitxormatrix(genl1)
-    M2 = np.triu(bitxormatrix(genl2),1) 
+def simple_summarize(text: str, max_sentences: int = 3) -> str:
+    if not text:
+        return "No content to summarize."
 
-    for i in range(m-1):
-        for j in range(i+1, m):
-            [r,c] = np.where(M2 == M1[i,j])
-            for k in range(len(r)):
-                VT[(i)*n + r[k]] = 1;
-                VT[(i)*n + c[k]] = 1;
-                VT[(j)*n + r[k]] = 1;
-                VT[(j)*n + c[k]] = 1;
-                
-                if M is None:
-                    M = np.copy(VT)
-                else:
-                    M = np.concatenate((M, VT), 1)
-                
-                VT = np.zeros((n*m,1), int)
-    
-    return M
+    parts = [s.strip() for s in text.split(".") if s.strip()]
+    if not parts:
+        return text[:300] + ("..." if len(text) > 300 else "")
+
+    summary_sentences = parts[:max_sentences]
+    summary = ". ".join(summary_sentences)
+    if not summary.endswith("."):
+        summary += "."
+    return summary
 \end{lstlisting}
+
+\subsection*{Хэрэглэгчийн түвшин шинэчлэх логикийн жишээ}
+Доорх функц нь хэрэглэгчийн нийт оноонд үндэслэн ур чадварын түвшин болон эрхийг шинэчилдэг.
+
+\begin{lstlisting}
+def update_level_and_role(self):
+    score = self.total_score
+
+    if score < 100:
+        level = "beginner"
+    elif score < 200:
+        level = "elementary"
+    elif score < 400:
+        level = "intermediate"
+    else:
+        level = "advanced"
+
+    self.skill_level = level
+
+    if level == "advanced" and self.completed_lessons >= 5:
+        if self.role != "admin":
+            self.role = "mentor"
+    else:
+        if self.role == "mentor":
+            self.role = "student"
+\end{lstlisting}
+
+\subsection*{Код ажиллуулагчийн нөөцийн хязгаарын жишээ}
+Доорх код нь CPU хугацаа, санах ой, гаралтын хэмжээг хязгаарлах жишээ юм.
+
+\begin{lstlisting}
+def apply_runner_limits():
+    if resource is None:
+        return
+
+    memory_limit_bytes = 128 * 1024 * 1024
+    output_file_limit_bytes = 1024 * 1024
+    cpu_seconds = max(1, int(settings.RUN_CODE_TIMEOUT_SECONDS) + 1)
+
+    for limit_name, limits in (
+        (resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds)),
+        (resource.RLIMIT_AS, (memory_limit_bytes, memory_limit_bytes)),
+        (resource.RLIMIT_FSIZE, (output_file_limit_bytes, output_file_limit_bytes)),
+    ):
+        try:
+            resource.setrlimit(limit_name, limits)
+        except (OSError, ValueError):
+            pass
+\end{lstlisting}
+
+\section*{A.2 API төгсгөлийн цэгүүдийн хураангуй хүснэгт}
+Төслийн тайланд API бүтэц оруулах нь системийн зохиомжийг ойлгуулахад тустай. Доорх хүснэгт нь үндсэн төгсгөлийн цэгүүдийн зорилгыг хураангуйлан үзүүлэв.
+
+\begin{longtable}{|p{5.2cm}|p{2.3cm}|p{7.3cm}|}
+\hline
+\textbf{Төгсгөлийн цэг} & \textbf{Арга} & \textbf{Зориулалт} \\
+\hline
+\texttt{/users/register} & POST & Шинэ хэрэглэгч бүртгэх \\
+\hline
+\texttt{/users/me} & GET & Нэвтэрсэн хэрэглэгчийн мэдээлэл авах \\
+\hline
+\texttt{/users/save-level} & POST & Түвшин тогтоох шалгалтын дараах түвшин хадгалах \\
+\hline
+\texttt{/courses} & GET/POST & Курс жагсаах, үүсгэх \\
+\hline
+\texttt{/courses/\{id\}} & GET & Курсийн дэлгэрэнгүй мэдээлэл авах \\
+\hline
+\texttt{/lessons/\{id\}} & GET & Хичээлийн дэлгэрэнгүй мэдээлэл авах \\
+\hline
+\texttt{/progress/lesson/\{id\}} & GET & Тухайн хичээлийн ахицын мэдээлэл авах \\
+\hline
+\texttt{/progress/complete/\{id\}} & POST & Хичээл дуусгалт хадгалах \\
+\hline
+\texttt{/progress/summary} & GET & Нийт ахицын хураангуй авах \\
+\hline
+\texttt{/ai/summary/\{lesson\_id\}} & GET & Хиймэл оюун эсвэл нөөц хураангуй авах \\
+\hline
+\texttt{/ai/quiz/\{lesson\_id\}} & GET & Хичээлийн сорил үүсгэх \\
+\hline
+\texttt{/ai/recommended-lessons} & GET & Хэрэглэгчид тохирсон хичээл санал болгох \\
+\hline
+\texttt{/community/posts} & GET/POST & Пост жагсаах, үүсгэх \\
+\hline
+\texttt{/community/comments} & GET/POST & Сэтгэгдэл жагсаах, үүсгэх \\
+\hline
+\texttt{/website/...} & GET/POST & Нүүр хуудасны агуулга удирдах \\
+\hline
+\end{longtable}
+
+\section*{A.3 Тайланд нэмж оруулах зураг, диаграмын санал}
+Тайланг 60 ба түүнээс дээш хуудсанд хүргэхэд зөвхөн текст биш, зохистой тайлбартай зураг, хүснэгт, диаграм чухал үүрэгтэй. Дараах төрлийн материалыг хавсралт эсвэл үндсэн бүлгүүдэд оруулж болно.
+
+\begin{itemize}
+\item Системийн ерөнхий архитектурын диаграм
+\item Use case diagram
+\item ER diagram
+\item Sequence diagram: placement test урсгал
+\item Sequence diagram: lesson completion ба progress update
+\item Landing page, dashboard, course detail, lesson detail, progress summary дэлгэцийн зургууд
+\item Community moderation-ийн үр дүнгийн жишээ
+\item Docker service startup болон орчны тохиргооны screenshot
+\end{itemize}
+
+Зураг бүрт дараах бүтэцтэй тайлбар нэмэхийг зөвлөж байна.
+\begin{enumerate}
+\item Зургийн зорилго
+\item Зурагт харагдаж буй үндсэн бүрэлдэхүүн
+\item Системийн аль хэсгийг баталж байгааг 2--4 өгүүлбэрээр тайлбарлах
+\end{enumerate}
+
+\section*{A.4 Туршилтын үр дүн бичих бэлэн загвар}
+Доорх хэлбэрийн догол мөрийг туршилтын зураг тус бүрийн доор ашиглаж болно.
+
+\begin{quote}
+``Энэ туршилтаар хэрэглэгч placement test өгсний дараа skill level хэрхэн хадгалагдаж байгааг шалгав. Зургаас харахад тестийн үр дүнгийн дараа course жагсаалт хэрэглэгчийн түвшинд нийцсэн байдлаар өөрчлөгдсөн байна. Энэ нь recommendation болон level persistence логик зөв ажиллаж байгааг баталж байна.''
+\end{quote}
+
+\begin{quote}
+``Энэ зурагт lesson detail хуудсан дахь AI summary, quiz, practice task хэсгүүдийг нэг дор харуулав. Хэрэглэгч lesson агуулгаа уншаад шууд ойлголтоо шалгах боломжтой байгаа нь системийн гол давуу талын нэг юм.''
+\end{quote}
+
+\section*{A.5 Docker Compose ашиглалтын ач холбогдол}
+Төслийн орчныг тогтвортой байлгахын тулд backend болон PostgreSQL үйлчилгээг Docker Compose ашиглан удирдаж байна. Энэ нь local development болон deployment бэлтгэлийг нэг хэлбэрт оруулж, dependency болон environment зөрүүг багасгадаг. Ялангуяа database readiness, environment variables, service dependency зэрэг асуудлыг нэг дор удирдах боломж олгодог нь full-stack төслийн хувьд чухал ач холбогдолтой.
+
+\section*{A.6 Бүлэг тус бүрт оруулж болох нэмэлт тайлбарын загвар}
+Энэ хэсэг нь тайлангаа улам уртасгахдаа хоосон текст нэмэхгүйгээр, бодит зурагтайгаа уялдуулж бичихэд зориулсан бэлэн загваруудыг агуулна.
+
+\subsection*{Архитектурын диаграмын тайлбарын загвар}
+\begin{quote}
+``Зураг A.1-д системийн ерөнхий архитектурыг үзүүлэв. Зургийн зүүн хэсэгт хэрэглэгчийн харилцах frontend орчин, төв хэсэгт Django REST backend, баруун хэсэгт өгөгдлийн сан болон AI үйлчилгээний давхаргуудыг харуулав. Хэрэглэгчийн бүх үйлдэл frontend-ээр эхэлж, API хүсэлт хэлбэрээр backend-д дамжин, шаардлагатай үед өгөгдлийн сан болон Gemini үйлчилгээтэй харилцаж байгааг уг диаграм тодорхой харуулж байна.''
+\end{quote}
+
+\subsection*{ER diagram-ын тайлбарын загвар}
+\begin{quote}
+``Зураг A.2-т өгөгдлийн сангийн үндсэн хүснэгтүүдийн холбоосыг харуулав. User нь LessonProgress, LikedLesson, CommunityPost, CommunityComment хүснэгтүүдтэй шууд холбоотой бөгөөд энэ нь хэрэглэгчийн сургалтын явц, сонирхол, харилцааны бүх ул мөрийг өгөгдлийн түвшинд барьж байгааг илтгэнэ. Course ба Lesson-ийн нэгээс олонд хамаарал нь шаталсан агуулгын бүтцийг, LearningTrack ба Course-ийн холбоос нь сургалтын замын ангиллыг илэрхийлнэ.''
+\end{quote}
+
+\subsection*{Progress summary-ийн зураг тайлбарлах загвар}
+\begin{quote}
+``Зураг A.3-т progress summary хуудасны харагдацыг үзүүлэв. Энд хэрэглэгчийн нийт оноо, дуусгасан lesson-ийн тоо, долоо хоногийн идэвх, course тус бүрийн ахиц харагдаж байна. Ийм төрлийн нэгтгэсэн самбар нь хэрэглэгч өөрийн суралцах байдлыг тоон мэдээллээр харах боломж олгож, дараагийн зорилтоо тодорхойлоход дэмжлэг үзүүлдэг.''
+\end{quote}
+
+\section*{A.7 Туршилтын үр дүн бичих дэлгэрэнгүй загвар}
+Доорх загваруудыг туршилтын зураг, хүснэгтийн доор ашиглавал бүлэг 4 илүү мэргэжлийн харагдана.
+
+\subsection*{Функциональ туршилтын тайлбар}
+\begin{quote}
+``Register болон login урсгалын туршилтаар хэрэглэгчийн бүртгэл зөв үүсэж, нэвтэрсний дараа хамгаалагдсан хуудсуудад JWT token ашиглан хандаж байгааг батлав. Энэ нь authentication layer зөв ажиллаж байгааг харуулж байна.''
+\end{quote}
+
+\subsection*{AI summary туршилтын тайлбар}
+\begin{quote}
+``AI summary туршилтаар lesson-ийн урт агуулгыг backend амжилттай боловсруулж, frontend дээр уншихад хялбар товч тайлбар болгон харуулж байгааг шалгав. Хэрэв AI үйлчилгээ ажиллахгүй тохиолдолд fallback summarize логик ажилласан нь найдвартай байдлын хувьд чухал үр дүн байв.''
+\end{quote}
+
+\subsection*{Moderation туршилтын тайлбар}
+\begin{quote}
+``Community moderation туршилтаар зохистой агуулга хэвийн нийтлэгдэж, banned keyword агуулсан текст reject төлөвтэй буцаж байгааг баталгаажуулав. Энэ нь community орчныг хяналтгүй орхихгүй байх суурь механизм бүрдсэнийг харуулж байна.''
+\end{quote}
+
+\section*{A.8 Хуудасны тоо нэмэгдүүлэх чанартай арга}
+Тайлангийн хуудасны тоог чанар алдуулахгүйгээр нэмэгдүүлэхийн тулд дараах аргыг ашиглаж болно.
+\begin{enumerate}
+\item Зураг бүрийн доор 4--6 өгүүлбэртэй техникийн тайлбар нэмэх
+\item Бүлэг 3 болон бүлэг 5 дээр endpoint, model, frontend page тус бүрийн жижиг хүснэгт оруулах
+\item Placement test, level-up test, progress summary, moderation урсгал тус бүрт sequence diagram оруулах
+\item Туршилтын үр дүнг ``зорилго, оролт, алхам, үр дүн, дүгнэлт'' гэсэн тогтмол бүтэцтэйгээр бичих
+\item Appendix хэсэгт API reference, environment configuration, screenshot catalog нэмэх
+\end{enumerate}
+
+Эдгээр аргыг ашиглавал тайлан хиймлээр сунгасан мэт харагдахгүй, харин бодит системийн баримтжуулалт улам баяжсан хэлбэртэй болно.

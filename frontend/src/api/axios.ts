@@ -42,6 +42,10 @@ const translateApiErrorMessage = (message: string) => {
     "Current password is incorrect.": "Одоогийн нууц үг буруу байна.",
     "This username is already taken.": "Энэ username аль хэдийн ашиглагдаж байна.",
     "This field may not be blank.": "Энэ талбар хоосон байж болохгүй.",
+    "You are already at the highest level.": "Та аль хэдийн хамгийн дээд түвшинд хүрсэн байна.",
+    "Level-up test generation failed.": "Level-up test үүсгэж чадсангүй.",
+    "No course or lesson content found for your current level.":
+      "Таны одоогийн түвшинд тохирох course эсвэл lesson-ийн агуулга олдсонгүй.",
   };
 
   if (exactTranslations[normalized]) {

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { API_ORIGIN, getApiErrorMessage } from "../api/axios";
 import { getLandingContent, type LandingContent } from "../api/website";
-import { isAuthenticated } from "../hooks/useAuth";
+import { isAuthenticated } from "../hooks/authSession";
 import LoadingState from "../components/LoadingState";
 import "../style/landing.css";
 

@@ -6,6 +6,7 @@ import {
   submitLevelUpTest,
   type QuizQuestion,
 } from "../api/ai";
+import { getApiErrorMessage } from "../api/axios";
 import useAuth from "../hooks/useAuth";
 import LoadingState from "../components/LoadingState";
 import TestResultModal from "../components/TestResultModal";
@@ -37,7 +38,9 @@ export default function LevelUpTest() {
         setCurrentLevel(res.current_level);
         setNextLevel(res.next_level);
       })
-      .catch(() => setError("Failed to load level-up test"))
+      .catch((error) =>
+        setError(getApiErrorMessage(error, "Failed to load level-up test"))
+      )
       .finally(() => setLoading(false));
   }, []);
 

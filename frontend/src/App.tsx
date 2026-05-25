@@ -1,5 +1,5 @@
 import AppRouter from "./router";
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider } from "./hooks/AuthProvider";
 
 function App() {
   return (

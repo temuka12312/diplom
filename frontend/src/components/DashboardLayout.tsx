@@ -9,7 +9,7 @@ import {
 } from "../api/courses";
 import { searchGames } from "../data/games";
 import { API_ORIGIN } from "../api/axios";
-import { logout } from "../hooks/useAuth";
+import { logout } from "../hooks/authSession";
 import useAuth from "../hooks/useAuth";
 import {
   FaHome,
@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }: Props) {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<CatalogSearchResult | null>(null);
-  const [gameResults, setGameResults] = useState(searchGames(""));
+  const [gameResults, setGameResults] = useState(() => searchGames(""));
   const [searchOpen, setSearchOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLDivElement | null>(null);
@@ -62,8 +62,12 @@ export default function DashboardLayout({ children }: Props) {
   }, []);
 
   useEffect(() => {
-    setProfileMenuOpen(false);
-    setSearchOpen(false);
+    const frameId = window.requestAnimationFrame(() => {
+      setProfileMenuOpen(false);
+      setSearchOpen(false);
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -93,9 +97,6 @@ export default function DashboardLayout({ children }: Props) {
   useEffect(() => {
     const query = searchQuery.trim();
     if (!query) {
-      setSearchResults(null);
-      setGameResults([]);
-      setSearchOpen(false);
       return;
     }
 
@@ -115,6 +116,7 @@ export default function DashboardLayout({ children }: Props) {
   }, [searchQuery]);
 
   const isAdmin = Boolean(user?.is_superuser || user?.is_staff);
+  const canTakeLevelUpTest = user?.skill_level !== "advanced";
   const userLabel = isAdmin ? "Admin" : "Student";
   const profileLabel = user?.nickname || user?.display_name || user?.username || userLabel;
   const avatarUrl = user?.avatar_url
@@ -145,12 +147,15 @@ export default function DashboardLayout({ children }: Props) {
     navigate(path);
   };
 
+  const normalizedSearchQuery = searchQuery.trim();
+  const visibleSearchResults = normalizedSearchQuery ? searchResults : null;
+  const visibleGameResults = normalizedSearchQuery ? gameResults : [];
   const hasSearchResults = Boolean(
-    gameResults.length ||
-      (searchResults &&
-        (searchResults.tracks.length ||
-          searchResults.courses.length ||
-          searchResults.lessons.length))
+    visibleGameResults.length ||
+      (visibleSearchResults &&
+        (visibleSearchResults.tracks.length ||
+          visibleSearchResults.courses.length ||
+          visibleSearchResults.lessons.length))
   );
 
   return (
@@ -292,16 +297,18 @@ export default function DashboardLayout({ children }: Props) {
                 {!collapsed && <span>Progress</span>}
               </NavLink>
 
-              <NavLink
-                to="/level-up-test"
-                className={({ isActive }) =>
-                  isActive ? "nav-item active" : "nav-item"
-                }
-                title="Level Test"
-              >
-                <FaRocket />
-                {!collapsed && <span>Level Test</span>}
-              </NavLink>
+              {canTakeLevelUpTest && (
+                <NavLink
+                  to="/level-up-test"
+                  className={({ isActive }) =>
+                    isActive ? "nav-item active" : "nav-item"
+                  }
+                  title="Level Test"
+                >
+                  <FaRocket />
+                  {!collapsed && <span>Level Test</span>}
+                </NavLink>
+              )}
 
               <NavLink
                 to="/community"
@@ -341,12 +348,12 @@ export default function DashboardLayout({ children }: Props) {
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   onFocus={() => {
-                    if (searchQuery.trim()) setSearchOpen(true);
+                    if (normalizedSearchQuery) setSearchOpen(true);
                   }}
                 />
 
                 <AnimatePresence>
-                  {searchOpen && searchQuery.trim() && (
+                  {searchOpen && normalizedSearchQuery && (
                     <motion.div
                       className="header-search-dropdown"
                       initial={{ opacity: 0, y: -8, scale: 0.98 }}
@@ -356,10 +363,10 @@ export default function DashboardLayout({ children }: Props) {
                     >
                       {hasSearchResults ? (
                         <>
-                          {searchResults!.tracks.length > 0 && (
+                          {visibleSearchResults && visibleSearchResults.tracks.length > 0 && (
                             <div className="header-search-group">
                               <span className="header-search-group-title">Tracks</span>
-                              {searchResults!.tracks.map((track) => (
+                              {visibleSearchResults.tracks.map((track) => (
                                 <button
                                   key={`track-${track.id}`}
                                   type="button"
@@ -373,10 +380,10 @@ export default function DashboardLayout({ children }: Props) {
                             </div>
                           )}
 
-                          {searchResults!.courses.length > 0 && (
+                          {visibleSearchResults && visibleSearchResults.courses.length > 0 && (
                             <div className="header-search-group">
                               <span className="header-search-group-title">Courses</span>
-                              {searchResults!.courses.map((course) => (
+                              {visibleSearchResults.courses.map((course) => (
                                 <button
                                   key={`course-${course.id}`}
                                   type="button"
@@ -390,10 +397,10 @@ export default function DashboardLayout({ children }: Props) {
                             </div>
                           )}
 
-                          {searchResults!.lessons.length > 0 && (
+                          {visibleSearchResults && visibleSearchResults.lessons.length > 0 && (
                             <div className="header-search-group">
                               <span className="header-search-group-title">Lessons</span>
-                              {searchResults!.lessons.map((lesson) => (
+                              {visibleSearchResults.lessons.map((lesson) => (
                                 <button
                                   key={`lesson-${lesson.id}`}
                                   type="button"
@@ -411,10 +418,10 @@ export default function DashboardLayout({ children }: Props) {
                             </div>
                           )}
 
-                          {gameResults.length > 0 && (
+                          {visibleGameResults.length > 0 && (
                             <div className="header-search-group">
                               <span className="header-search-group-title">Games</span>
-                              {gameResults.map((game) => (
+                              {visibleGameResults.map((game) => (
                                 <button
                                   key={`game-${game.slug}`}
                                   type="button"

@@ -1,6 +1,7 @@
 from django.db.models import Count, Q
 from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 
@@ -20,6 +21,16 @@ LEVEL_RANK = {
     "intermediate": 3,
     "advanced": 4,
 }
+
+
+def get_allowed_levels_for_user(user) -> list[str]:
+    user_level = getattr(user, "skill_level", "beginner") or "beginner"
+    user_rank = LEVEL_RANK.get(user_level, 1)
+    return [
+        level_name
+        for level_name, rank in LEVEL_RANK.items()
+        if rank <= user_rank
+    ]
 
 
 class IsStaffMentorOrReadOnly(BasePermission):
@@ -51,8 +62,9 @@ class TrackCourseListView(generics.ListAPIView):
 
     def get_queryset(self):
         track_id = self.kwargs.get("track_id")
+        allowed_levels = get_allowed_levels_for_user(self.request.user)
         return (
-            Course.objects.filter(track_id=track_id)
+            Course.objects.filter(track_id=track_id, level__in=allowed_levels)
             .select_related("track")
             .prefetch_related("lessons")
             .order_by("-created_at")
@@ -79,14 +91,7 @@ class CourseListView(generics.ListCreateAPIView):
             qs = qs.filter(track_id=track_id)
 
         if my_level_only == "1":
-            user_level = getattr(self.request.user, "skill_level", "beginner")
-            user_rank = LEVEL_RANK.get(user_level, 1)
-
-            allowed_levels = [
-                level_name
-                for level_name, rank in LEVEL_RANK.items()
-                if rank <= user_rank
-            ]
+            allowed_levels = get_allowed_levels_for_user(self.request.user)
             qs = qs.filter(level__in=allowed_levels)
 
         elif level in LEVEL_RANK:
@@ -107,6 +112,13 @@ class CourseDetailView(generics.RetrieveAPIView):
     serializer_class = CourseSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_object(self):
+        course = super().get_object()
+        allowed_levels = get_allowed_levels_for_user(self.request.user)
+        if course.level not in allowed_levels:
+            raise PermissionDenied("You do not have access to this course yet.")
+        return course
+
 
 class LessonDetailView(generics.RetrieveAPIView):
     queryset = Lesson.objects.all().select_related("course")
@@ -115,6 +127,9 @@ class LessonDetailView(generics.RetrieveAPIView):
 
     def get_object(self):
         lesson = super().get_object()
+        allowed_levels = get_allowed_levels_for_user(self.request.user)
+        if lesson.course.level not in allowed_levels:
+            raise PermissionDenied("You do not have access to this lesson yet.")
         lesson = ensure_practice_task_for_lesson(lesson)
         return lesson
 
@@ -177,12 +192,7 @@ def toggle_lesson_like(request, lesson_id):
 @permission_classes([IsAuthenticated])
 def home_feed(request):
     user_level = getattr(request.user, "skill_level", "beginner") or "beginner"
-    user_rank = LEVEL_RANK.get(user_level, 1)
-    allowed_levels = [
-        level_name
-        for level_name, rank in LEVEL_RANK.items()
-        if rank <= user_rank
-    ]
+    allowed_levels = get_allowed_levels_for_user(request.user)
 
     annotated_courses = list(
         Course.objects.filter(level__in=allowed_levels, track__isnull=False)
@@ -243,14 +253,21 @@ def search_catalog(request):
     if len(query) < 2:
         return Response({"tracks": [], "courses": [], "lessons": []})
 
+    allowed_levels = get_allowed_levels_for_user(request.user)
     tracks = LearningTrack.objects.filter(name__icontains=query).order_by("order", "name")[:5]
     courses = (
-        Course.objects.filter(Q(title__icontains=query) | Q(description__icontains=query))
+        Course.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query),
+            level__in=allowed_levels,
+        )
         .select_related("track")
         .order_by("-created_at")[:6]
     )
     lessons = (
-        Lesson.objects.filter(Q(title__icontains=query) | Q(content__icontains=query))
+        Lesson.objects.filter(
+            Q(title__icontains=query) | Q(content__icontains=query),
+            course__level__in=allowed_levels,
+        )
         .select_related("course")
         .order_by("title")[:6]
     )

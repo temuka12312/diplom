@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { createPortal } from "react-dom";
 
@@ -31,11 +31,7 @@ export default function TestResultModal({
   actionLabel,
   onClose,
 }: Props) {
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    setMounted(true);
-
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -43,10 +39,6 @@ export default function TestResultModal({
       document.body.style.overflow = previousOverflow;
     };
   }, []);
-
-  if (!mounted) {
-    return null;
-  }
 
   return createPortal(
     <>

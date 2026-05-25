@@ -26,6 +26,9 @@ except ImportError:
     resource = None
 
 
+LEVEL_SEQUENCE = ["beginner", "elementary", "intermediate", "advanced"]
+
+
 def apply_runner_limits():
     if resource is None:
         return
@@ -397,18 +400,92 @@ def collect_level_source_text(level: str) -> str:
     return "\n\n".join(parts).strip()
 
 
+def normalize_skill_level(level: str | None) -> str:
+    if level in LEVEL_SEQUENCE:
+        return level
+    return "beginner"
+
+
+def get_next_skill_level(level: str | None) -> str | None:
+    normalized_level = normalize_skill_level(level)
+    current_index = LEVEL_SEQUENCE.index(normalized_level)
+
+    if current_index >= len(LEVEL_SEQUENCE) - 1:
+        return None
+
+    return LEVEL_SEQUENCE[current_index + 1]
+
+
+def fallback_quiz_from_source_text(source_text: str, num_questions: int) -> list[dict]:
+    lines = [line.strip() for line in source_text.splitlines() if line.strip()]
+    lesson_titles = []
+    course_titles = []
+
+    for line in lines:
+        if line.startswith("Lesson title:"):
+            lesson_titles.append(line.split(":", 1)[1].strip())
+        elif line.startswith("Course title:"):
+            course_titles.append(line.split(":", 1)[1].strip())
+
+    titles = []
+    for title in lesson_titles + course_titles:
+        if title and title not in titles:
+            titles.append(title)
+
+    if not titles:
+        return []
+
+    generic_distractors = [
+        "Мэдээллийн сангийн удирдлага",
+        "Машин сургалтын онол",
+        "Мобайл апп стор нийтлэх",
+        "Сүлжээний төхөөрөмжийн засвар",
+        "3D график рэндэрлэлт",
+        "Микроконтроллер гагнуур",
+    ]
+
+    questions = []
+    prompt_templates = [
+        "Дараах сэдвүүдээс аль нь энэ түвшний хичээлийн агуулгад багтсан бэ?",
+        "Энэ түвшний course, lesson-үүдийн нэг сэдвийг сонгоно уу.",
+        "LOTUS Learn-ийн энэ түвшний материалд ямар сэдэв орсон бэ?",
+    ]
+
+    for idx in range(num_questions):
+        correct = titles[idx % len(titles)]
+        distractors = [item for item in titles if item != correct]
+        distractors.extend(
+            item for item in generic_distractors if item != correct and item not in distractors
+        )
+        options = distractors[:3]
+        answer_index = idx % 4
+        options.insert(answer_index, correct)
+
+        questions.append(
+            {
+                "id": idx + 1,
+                "question": prompt_templates[idx % len(prompt_templates)],
+                "options": options[:4],
+                "answer_index": answer_index,
+                "explanation": f'"{correct}" нь тухайн түвшний course эсвэл lesson агуулгад байгаа сэдэв юм.',
+            }
+        )
+
+    return questions
+
+
 def build_quiz_from_source_text(
     source_text: str,
     num_questions: int,
     purpose: str,
     fallback_topic: str,
 ) -> list[dict]:
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        return []
-
     if not source_text.strip():
         return []
+
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return fallback_quiz_from_source_text(source_text, num_questions)
 
     try:
         client = genai.Client(api_key=api_key)
@@ -475,7 +552,7 @@ def build_quiz_from_source_text(
         return cleaned
 
     except Exception:
-        return []
+        return fallback_quiz_from_source_text(source_text, num_questions)
 
 
 def llm_placement_quiz(num_questions: int = 20) -> list[dict]:
@@ -490,7 +567,10 @@ def llm_placement_quiz(num_questions: int = 20) -> list[dict]:
 
 def llm_level_up_quiz(current_level: str, num_questions: int = 10) -> list[dict]:
     source_text = collect_level_source_text(current_level)
-    next_level = "intermediate" if current_level == "beginner" else "advanced"
+    next_level = get_next_skill_level(current_level)
+
+    if not next_level:
+        return []
 
     return build_quiz_from_source_text(
         source_text=source_text,
@@ -525,6 +605,16 @@ def grade_answers(questions: list[dict], answers: list[int]) -> tuple[int, int, 
 
     percent = round((correct / total) * 100) if total > 0 else 0
     return correct, total, percent
+
+
+def get_level_from_percent(percent: int) -> str:
+    if percent >= 75:
+        return "advanced"
+    if percent >= 50:
+        return "intermediate"
+    if percent >= 25:
+        return "elementary"
+    return "beginner"
 
 
 @api_view(["GET"])
@@ -599,7 +689,7 @@ def recommended_lessons(request):
 
     qs = Lesson.objects.exclude(id__in=completed_ids).select_related("course")
 
-    if user_level in ["beginner", "intermediate", "advanced"]:
+    if user_level in LEVEL_SEQUENCE:
         qs = qs.filter(course__level=user_level)
 
     qs = qs.order_by("course__title", "order")[:5]
@@ -664,11 +754,7 @@ def placement_quiz_submit(request):
 
     correct, total, percent = grade_answers(questions, answers)
 
-    level = "beginner"
-    if percent >= 70:
-        level = "advanced"
-    elif percent >= 40:
-        level = "intermediate"
+    level = get_level_from_percent(percent)
 
     user: User = request.user
     user.skill_level = level
@@ -693,11 +779,19 @@ def placement_quiz_submit(request):
 @permission_classes([IsAuthenticated])
 def level_up_quiz(request):
     user = request.user
-    current_level = getattr(user, "skill_level", "beginner")
+    current_level = normalize_skill_level(getattr(user, "skill_level", "beginner"))
+    next_level = get_next_skill_level(current_level)
 
-    if current_level == "advanced":
+    if not next_level:
         return Response(
             {"detail": "You are already at the highest level."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    source_text = collect_level_source_text(current_level)
+    if not source_text:
+        return Response(
+            {"detail": "No course or lesson content found for your current level."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -708,8 +802,6 @@ def level_up_quiz(request):
             {"detail": "Level-up test generation failed."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-
-    next_level = "intermediate" if current_level == "beginner" else "advanced"
 
     request.session["level_up_questions"] = questions
     request.session["level_up_current_level"] = current_level
