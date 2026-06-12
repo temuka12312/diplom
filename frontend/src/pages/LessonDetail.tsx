@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import type { Lesson } from "../api/courses";
 import { runPythonCode } from "../api/compiler";
@@ -24,6 +24,72 @@ import "../style/lesson-detail.css";
 import { getLesson, toggleLessonLike } from "../api/courses";
 
 type PracticeMode = "python" | "web";
+
+declare global {
+  interface Window {
+    YT?: {
+      Player: new (
+        element: HTMLIFrameElement,
+        options: {
+          events?: {
+            onStateChange?: (event: { data: number }) => void;
+          };
+        }
+      ) => {
+        destroy: () => void;
+      };
+      PlayerState: {
+        ENDED: number;
+      };
+    };
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
+const getTrackableVideoUrl = (rawUrl?: string) => {
+  if (!rawUrl) return null;
+
+  try {
+    const url = new URL(rawUrl);
+    const hostname = url.hostname.replace(/^www\./, "");
+    const isYoutube =
+      hostname === "youtube.com" ||
+      hostname === "youtu.be" ||
+      hostname === "m.youtube.com" ||
+      hostname === "youtube-nocookie.com";
+
+    if (!isYoutube) return null;
+
+    let videoId = "";
+
+    if (hostname === "youtu.be") {
+      videoId = url.pathname.slice(1);
+    } else if (url.pathname.startsWith("/embed/")) {
+      videoId = url.pathname.split("/embed/")[1] || "";
+    } else {
+      videoId = url.searchParams.get("v") || "";
+    }
+
+    if (!videoId) return null;
+
+    const embedUrl = new URL(`https://www.youtube.com/embed/${videoId}`);
+    embedUrl.searchParams.set("enablejsapi", "1");
+
+    const start = url.searchParams.get("start") || url.searchParams.get("t");
+    if (start) {
+      embedUrl.searchParams.set("start", start.replace(/s$/, ""));
+    }
+
+    const list = url.searchParams.get("list");
+    if (list) {
+      embedUrl.searchParams.set("list", list);
+    }
+
+    return embedUrl.toString();
+  } catch {
+    return null;
+  }
+};
 
 export default function LessonDetail() {
   const { courseId, lessonId } = useParams<{
@@ -59,7 +125,9 @@ export default function LessonDetail() {
     Record<number, string>
   >({});
 
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [videoCompleted, setVideoCompleted] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
   const [practiceAnswer, setPracticeAnswer] = useState("");
   const [practiceSubmitted, setPracticeSubmitted] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -96,6 +164,10 @@ export default function LessonDetail() {
   const hasVideo = useMemo(() => {
     return Boolean(lesson?.video_url || lesson?.video_file);
   }, [lesson]);
+
+  const trackableVideoUrl = useMemo(() => {
+    return getTrackableVideoUrl(lesson?.video_url);
+  }, [lesson?.video_url]);
 
   const practiceMode = useMemo<PracticeMode>(() => {
     const source = `
@@ -301,6 +373,11 @@ export default function LessonDetail() {
   useEffect(() => {
     if (!lessonId) return;
 
+    setVideoCompleted(false);
+    setVideoEnded(false);
+    setPracticeSubmitted(false);
+    setPracticeFeedback(null);
+
     Promise.all([
       getLesson(lessonId),
       getLessonProgress(lessonId).catch(() => null),
@@ -312,6 +389,8 @@ export default function LessonDetail() {
         if (progressData) {
           setProgress(progressData);
           setIsCompleted(progressData.is_completed);
+          setVideoCompleted(progressData.is_completed);
+          setVideoEnded(progressData.is_completed);
           setPracticeSubmitted(Boolean(progressData.practice_submitted));
           setPracticeFeedback(progressData.practice_feedback || null);
           if (progressData.practice_answer) {
@@ -327,6 +406,52 @@ export default function LessonDetail() {
 
     loadDiscussion();
   }, [lessonId, loadDiscussion]);
+
+  useEffect(() => {
+    if (!trackableVideoUrl || !iframeRef.current || videoCompleted) return;
+
+    let cancelled = false;
+    let player: { destroy: () => void } | null = null;
+
+    const attachPlayer = () => {
+      if (cancelled || !iframeRef.current || !window.YT) return;
+
+      player = new window.YT.Player(iframeRef.current, {
+        events: {
+          onStateChange: (event) => {
+            if (event.data === window.YT?.PlayerState.ENDED) {
+              setVideoEnded(true);
+            }
+          },
+        },
+      });
+    };
+
+    if (window.YT?.Player) {
+      attachPlayer();
+    } else {
+      const existingScript = document.querySelector<HTMLScriptElement>(
+        'script[src="https://www.youtube.com/iframe_api"]'
+      );
+
+      const previousReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        previousReady?.();
+        attachPlayer();
+      };
+
+      if (!existingScript) {
+        const script = document.createElement("script");
+        script.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(script);
+      }
+    }
+
+    return () => {
+      cancelled = true;
+      player?.destroy();
+    };
+  }, [trackableVideoUrl, videoCompleted]);
 
   const handleComplete = async () => {
     if (!lesson || !canMarkDone) return;
@@ -625,8 +750,9 @@ export default function LessonDetail() {
               <>
                 <div className="video-frame-wrap">
                   <iframe
+                    ref={iframeRef}
                     className="video-frame"
-                    src={lesson.video_url}
+                    src={trackableVideoUrl || lesson.video_url}
                     allowFullScreen
                     title={lesson.title}
                   />
@@ -638,6 +764,7 @@ export default function LessonDetail() {
                       className="button"
                       type="button"
                       onClick={() => setVideoCompleted(true)}
+                      disabled={Boolean(trackableVideoUrl) && !videoEnded}
                     >
                       Бичлэг үзэж дууслаа
                     </button>
@@ -652,13 +779,24 @@ export default function LessonDetail() {
                   <video
                     className="lesson-video-player"
                     controls
-                    onEnded={() => setVideoCompleted(true)}
+                    onEnded={() => setVideoEnded(true)}
                   >
                     <source src={lesson.video_file} />
                   </video>
                 </div>
 
-                {videoCompleted && (
+                {!videoCompleted ? (
+                  <div className="video-complete-row">
+                    <button
+                      className="button"
+                      type="button"
+                      onClick={() => setVideoCompleted(true)}
+                      disabled={!videoEnded}
+                    >
+                      Бичлэг үзэж дууслаа
+                    </button>
+                  </div>
+                ) : (
                   <p className="success-text">✓ Видео бүрэн үзэгдлээ.</p>
                 )}
               </>

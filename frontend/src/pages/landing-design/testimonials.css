@@ -1,0 +1,29 @@
+.testimonial-window {
+  overflow: hidden;
+}
+
+.testimonial-track {
+  --testimonial-gap: 16px;
+  --testimonial-card-size: calc((100% - (var(--testimonial-gap) * 2)) / 3);
+  --testimonial-step: calc(var(--testimonial-card-size) + var(--testimonial-gap));
+  display: flex;
+  gap: var(--testimonial-gap);
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.testimonial-card {
+  flex: 0 0 var(--testimonial-card-size);
+}
+
+@media (max-width: 1279px) {
+  .testimonial-track {
+    --testimonial-card-size: calc((100% - var(--testimonial-gap)) / 2);
+  }
+}
+
+@media (max-width: 767px) {
+  .testimonial-track {
+    --testimonial-card-size: 100%;
+  }
+}
